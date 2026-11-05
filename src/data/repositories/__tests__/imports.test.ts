@@ -35,6 +35,28 @@ describe('imports repo', () => {
     expect(tradesCreated).toBe(1);
   });
 
+  it('undo removes batch trades', async () => {
+    const db = await createTestDb();
+    const now = systemClock.now();
+    await db.run(
+      `INSERT INTO accounts (id, name, quote_currency, created_at, updated_at) VALUES (?,?,?,?,?)`,
+      ['acc1', 'Main', 'USD', now, now],
+    );
+    const imports = createImportsRepo(db, { ids: testIds(), clock: systemClock, mode: 'real' });
+    const plan = await buildImportPlan({
+      text: CSV,
+      adapters: [testClosedAdapter],
+      quoteCurrency: 'USD',
+      sourceTz: 'UTC',
+      existingFingerprints: new Set(),
+    });
+    if (!('trades' in plan)) throw new Error('plan failed');
+    const { batchId } = await imports.commit({ accountId: 'acc1', plan, fileName: 't.csv' });
+    await imports.undo(batchId);
+    const count = await db.get<{ c: number }>('SELECT COUNT(*) as c FROM trades');
+    expect(count?.c).toBe(0);
+  });
+
   it('blocks demo mode', async () => {
     const db = await createTestDb();
     const imports = createImportsRepo(db, { ids: testIds(), clock: systemClock, mode: 'demo' });

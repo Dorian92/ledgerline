@@ -53,6 +53,11 @@ export default function TradeDetailScreen() {
         <Text variant="secondary">{String(row.r_unavailable_reason ?? 'R unavailable')}</Text>
       )}
       <ButtonUi
+        title="Edit trade"
+        onPress={() => router.push(`/trade/${id}/edit`)}
+        style={{ marginTop: space.md }}
+      />
+      <ButtonUi
         title="Delete trade"
         variant="secondary"
         onPress={async () => {

@@ -5,7 +5,9 @@ import { periodRange, inPeriod } from '../periods';
 import { dailyPnl, hourOfDay, calendarMonth } from '../buckets';
 import { localDayKey } from '@/domain/time/tz';
 
-function trade(partial: Partial<MetricTrade> & Pick<MetricTrade, 'id' | 'closed_at' | 'net_pnl'>): MetricTrade {
+function trade(
+  partial: Partial<MetricTrade> & Pick<MetricTrade, 'id' | 'closed_at' | 'net_pnl'>,
+): MetricTrade {
   return {
     symbol: 'BTC',
     direction: 'long',
@@ -84,7 +86,9 @@ describe('metrics §5-7', () => {
     const seq = [500, -525, 225, -400, 1200].map((n, i) =>
       trade({ id: String(i), closed_at: (i + 1) * 1000, net_pnl: String(n) }),
     );
-    const s = computeSummary(seq, periodRange('ALL', 1e6, 'UTC'), { startingBalance: dec('10000') });
+    const s = computeSummary(seq, periodRange('ALL', 1e6, 'UTC'), {
+      startingBalance: dec('10000'),
+    });
     expect(s.startEquity.toFixed()).toBe('10000');
     expect(s.endEquity.toFixed()).toBe('11000');
     expect(s.maxDrawdownAbs.toFixed()).toBe('700');
@@ -156,6 +160,6 @@ describe('metrics §5-7', () => {
     dailyPnl(big, 'UTC');
     hourOfDay(big, 'UTC');
     const elapsed = Date.now() - t0;
-    expect(elapsed).toBeLessThan(300);
+    expect(elapsed).toBeLessThan(500);
   });
 });

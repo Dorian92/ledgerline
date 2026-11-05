@@ -1,0 +1,7 @@
+appId: com.ledgerline.app
+---
+- launchApp
+- tapOn: 'Explore with demo data'
+- tapOn: 'Trades'
+- tapOn: 'Losers'
+- tapOn: 'All'

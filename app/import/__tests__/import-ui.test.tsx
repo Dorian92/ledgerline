@@ -2,7 +2,17 @@
 import { render, screen } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+}));
+
+jest.mock('@/data/DbProvider', () => ({
+  useRepos: () => ({
+    imports: { existingFingerprints: async () => new Set() },
+  }),
+}));
+
+jest.mock('@/state/session', () => ({
+  useSession: (sel: (s: { activeAccountId: string }) => unknown) => sel({ activeAccountId: 'acc' }),
 }));
 
 jest.mock('@/features/guards', () => ({

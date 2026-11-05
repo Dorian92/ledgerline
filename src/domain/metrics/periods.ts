@@ -1,4 +1,4 @@
-import { startOfLocalDay, localDayKey, addLocalDays, startOfLocalDayKey, type DayKey } from '@/domain/time/tz';
+import { localDayKey, addLocalDays, startOfLocalDayKey, type DayKey } from '@/domain/time/tz';
 
 export type PeriodKey = '7D' | '30D' | 'YTD' | 'ALL';
 

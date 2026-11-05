@@ -1,10 +1,23 @@
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 
+import { useRepos } from '@/data/DbProvider';
+import { importAdapters } from '@/domain/import/adapters';
+import { buildImportPlan } from '@/domain/import/plan';
 import { useRealModeOnly } from '@/features/guards';
+import { useImportDraft } from '@/state/importDraft';
+import { useSession } from '@/state/session';
+import { ButtonUi } from '@/ui/Button';
 import { ScreenHeader } from '@/ui/primitives';
 import { Text } from '@/ui/Text';
 import { color, radius, space } from '@/ui/tokens';
+
+const SAMPLE = `Time,Symbol,Side,Qty,Entry,Exit
+2024-01-01T12:00:00Z,BTC-PERP,long,0.1,100,101
+2024-01-02T12:00:00Z,ETH-PERP,short,1,50,49
+`;
 
 const EXCHANGES = [
   { id: 'binance', label: 'Binance', monogram: 'B' },
@@ -15,6 +28,36 @@ const EXCHANGES = [
 export default function ImportIndexScreen() {
   const router = useRouter();
   const guard = useRealModeOnly();
+  const repos = useRepos();
+  const accountId = useSession((s) => s.activeAccountId);
+  const setDraft = useImportDraft((s) => s.setDraft);
+
+  const loadText = async (fileName: string, text: string) => {
+    const fps = await repos.imports.existingFingerprints(accountId!);
+    const plan = await buildImportPlan({
+      text,
+      adapters: importAdapters,
+      quoteCurrency: 'USD',
+      sourceTz: 'UTC',
+      existingFingerprints: fps,
+    });
+    if (!('summary' in plan)) {
+      return;
+    }
+    setDraft({ fileName, text, plan });
+    router.push('/import/preview');
+  };
+
+  const pickFile = async () => {
+    const res = await DocumentPicker.getDocumentAsync({
+      type: ['text/csv', 'text/comma-separated-values', 'text/plain', '*/*'],
+      copyToCacheDirectory: true,
+    });
+    if (res.canceled || !res.assets[0]) return;
+    const asset = res.assets[0];
+    const text = await FileSystem.readAsStringAsync(asset.uri);
+    await loadText(asset.name ?? 'import.csv', text);
+  };
 
   if (!guard.allowed) {
     return (
@@ -29,22 +72,26 @@ export default function ImportIndexScreen() {
     <View style={styles.container}>
       <ScreenHeader title="Import trades" />
       <Text variant="secondary">
-        Choose an exchange. Verified CSV imports are not available yet.
+        Exchange adapters for Binance, Bybit and OKX are not verified yet. You can import a test CSV
+        format below.
       </Text>
       <View style={styles.tiles}>
         {EXCHANGES.map((ex) => (
-          <Pressable key={ex.id} style={styles.tile} accessibilityRole="button" onPress={() => {}}>
+          <View key={ex.id} style={styles.tile}>
             <Text variant="title">{ex.monogram}</Text>
             <Text variant="body">{ex.label}</Text>
             <Text variant="caption" style={styles.notYet}>
               Not yet
             </Text>
-          </Pressable>
+          </View>
         ))}
       </View>
-      <Pressable onPress={() => router.back()} accessibilityRole="button">
-        <Text style={{ color: color.violet }}>Back</Text>
-      </Pressable>
+      <ButtonUi title="Choose CSV file" onPress={pickFile} />
+      <ButtonUi
+        title="Load synthetic test CSV"
+        variant="secondary"
+        onPress={() => loadText('SYNTHETIC_test.csv', SAMPLE)}
+      />
     </View>
   );
 }

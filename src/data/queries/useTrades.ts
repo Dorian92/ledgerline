@@ -16,6 +16,8 @@ function formToInput(values: {
   stop?: string;
   fees?: string;
   notes?: string;
+  emotion?: 'calm' | 'fomo' | 'revenge' | 'fear';
+  tagIds?: string[];
   accountId: string;
   quoteAsset: 'USD' | 'USDT' | 'USDC';
 }): TradeInput | { error: string } {
@@ -54,8 +56,8 @@ function formToInput(values: {
     funding: dec('0'),
     fundingStatus: 'none',
     pnlSource: 'computed',
-    emotion: 'calm',
-    tagIds: [],
+    emotion: values.emotion ?? 'calm',
+    tagIds: values.tagIds ?? [],
     notes: values.notes?.trim() ?? '',
   };
 }
@@ -82,6 +84,39 @@ export function useCreateTrade() {
     mutationFn: (input: TradeInput) => repos.trades.create(input, 'manual'),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk.root(mode, accountId) });
+    },
+  });
+}
+
+export function useUpdateTrade() {
+  const repos = useRepos();
+  const qc = useQueryClient();
+  const accountId = useSession((s) => s.activeAccountId);
+  const mode = useSession((s) => s.mode);
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: TradeInput }) =>
+      repos.trades.update(id, input),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.root(mode, accountId) });
+    },
+  });
+}
+
+export function useTags() {
+  const repos = useRepos();
+  return useQuery({
+    queryKey: ['tags'],
+    queryFn: () => repos.tags.list(),
+  });
+}
+
+export function useCreateTag() {
+  const repos = useRepos();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => repos.tags.create(name),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['tags'] });
     },
   });
 }

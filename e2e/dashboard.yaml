@@ -1,0 +1,9 @@
+appId: com.ledgerline.app
+---
+- launchApp
+- tapOn: 'Explore with demo data'
+- assertVisible: 'Dashboard'
+- tapOn: '30D'
+- tapOn: '7D'
+- tapOn: 'Trades'
+- tapOn: 'Home'

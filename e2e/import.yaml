@@ -1,0 +1,8 @@
+appId: com.ledgerline.app
+---
+- launchApp
+- tapOn: 'Start my journal'
+- tapOn: 'Create account'
+- tapOn: 'Settings'
+- tapOn: 'Import CSV'
+- tapOn: 'Load synthetic test CSV'

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInput,
   View,
+  Pressable,
 } from 'react-native';
 
 import { formToInput } from '@/data/queries/useTrades';
@@ -36,6 +37,14 @@ export function TradeForm({
   const [quantity, setQuantity] = useState('0.15');
   const [stop, setStop] = useState('68020');
   const [fees, setFees] = useState('4.10');
+  const [emotion, setEmotion] = useState<'calm' | 'fomo' | 'revenge' | 'fear'>('calm');
+
+  const emotions: { id: typeof emotion; label: string }[] = [
+    { id: 'calm', label: 'Calm' },
+    { id: 'fomo', label: 'FOMO' },
+    { id: 'revenge', label: 'Revenge' },
+    { id: 'fear', label: 'Fear' },
+  ];
 
   const derived = useMemo(() => {
     if (!accountId) return null;
@@ -47,15 +56,16 @@ export function TradeForm({
       quantity,
       stop,
       fees,
+      emotion,
       accountId,
       quoteAsset: 'USD',
     });
     if ('error' in input) return null;
     return computeTrade(input);
-  }, [accountId, symbol, direction, entry, exit, quantity, stop, fees]);
+  }, [accountId, symbol, direction, entry, exit, quantity, stop, fees, emotion]);
 
   const save = () => {
-    onSubmit({ symbol, direction, entry, exit, quantity, stop, fees, notes: '' });
+    onSubmit({ symbol, direction, entry, exit, quantity, stop, fees, notes: '', emotion });
   };
 
   return (
@@ -79,6 +89,20 @@ export function TradeForm({
         <Field label="SIZE" value={quantity} onChange={setQuantity} />
         <Field label="STOP" value={stop} onChange={setStop} />
         <Field label="FEES" value={fees} onChange={setFees} />
+        <Text variant="caption">EMOTION</Text>
+        <View style={styles.emotions}>
+          {emotions.map((e) => (
+            <Pressable
+              key={e.id}
+              onPress={() => setEmotion(e.id)}
+              style={[styles.chip, emotion === e.id && styles.chipActive]}
+            >
+              <Text variant="caption" style={{ textTransform: 'none' }}>
+                {e.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
         {derived?.netPnl ? (
           <Card style={styles.computed}>
             <Text variant="caption">COMPUTED · LIVE</Text>
@@ -126,4 +150,13 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   computed: { marginTop: space.md, gap: space.sm, backgroundColor: color.violetSoft },
+  emotions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  chip: {
+    borderWidth: 1,
+    borderColor: color.border,
+    borderRadius: 999,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+  },
+  chipActive: { borderColor: color.violet, backgroundColor: color.violetSoft },
 });

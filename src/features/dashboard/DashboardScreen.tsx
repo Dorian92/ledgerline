@@ -5,7 +5,8 @@ import { format } from 'date-fns';
 
 import { useDashboard } from '@/data/queries/useDashboard';
 import { formatPercent, formatR } from '@/domain/money/format';
-import { downsampleEquity } from '@/domain/metrics';
+import { EquityChart } from '@/ui/charts/EquityChart';
+import { toDashboardViewModel } from '@/features/dashboard/viewModel';
 import { useSession } from '@/state/session';
 import { DemoSheet } from '@/features/demo/DemoSheet';
 import { Money } from '@/ui/Money';
@@ -77,6 +78,7 @@ export default function DashboardScreen() {
               NET PNL · {period}
             </Text>
             <Money amount={s.netPnl} currency="USD" variant="hero" />
+            <Text variant="secondary">{toDashboardViewModel(s, 'USD').subline}</Text>
             <View style={styles.tiles}>
               <StatTile label="WIN RATE" value={s.winRate ? formatPercent(s.winRate, 1) : '—'} />
               <StatTile label="AVG R" value={s.avgR ? formatR(s.avgR) : '—'} />
@@ -90,13 +92,10 @@ export default function DashboardScreen() {
               />
             </View>
             <Text variant="caption" style={{ marginTop: space.xl }}>
-              EQUITY (approx)
+              EQUITY CURVE
             </Text>
-            <Text variant="secondary">
-              {downsampleEquity([], 24).length === 0
-                ? 'Chart builds as you close trades.'
-                : `${data?.summary.tradeCount ?? 0} closed trades in range`}
-            </Text>
+            <Text variant="secondary">{toDashboardViewModel(s, 'USD').equityRange}</Text>
+            <EquityChart points={s.equity} />
             <Text variant="caption" style={{ marginTop: space.lg }}>
               RECENT
             </Text>

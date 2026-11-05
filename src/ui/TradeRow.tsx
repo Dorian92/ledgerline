@@ -13,6 +13,7 @@ export function TradeRow({
   netPnl,
   rMultiple,
   onPress,
+  onLongPress,
 }: {
   symbol: string;
   direction: 'long' | 'short';
@@ -20,6 +21,7 @@ export function TradeRow({
   netPnl: string;
   rMultiple: string | null;
   onPress?: () => void;
+  onLongPress?: () => void;
 }) {
   const net = fromCanonical(netPnl);
   const body = (
@@ -41,9 +43,9 @@ export function TradeRow({
       </View>
     </View>
   );
-  if (onPress) {
+  if (onPress || onLongPress) {
     return (
-      <Pressable onPress={onPress} accessibilityRole="button">
+      <Pressable onPress={onPress} onLongPress={onLongPress} accessibilityRole="button">
         {body}
       </Pressable>
     );

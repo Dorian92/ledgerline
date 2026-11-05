@@ -1,7 +1,7 @@
 import type { Db } from '@/data/db/types';
 import type { Clock } from '@/data/clock';
 import type { IdGenerator } from '@/data/ids';
-import { tradeInputToRow } from '@/data/mappers/trade';
+import { tradeInputToRow, rowToTradeInput, type TradeRow } from '@/data/mappers/trade';
 import { validateTradeInput, accountFromQuote } from '@/domain/trade';
 import type { TradeInput } from '@/domain/trade/types';
 import { fromCanonical, toCanonical } from '@/domain/money/canonical';
@@ -74,6 +74,106 @@ export function createTradesRepo(db: Db, deps: { ids: IdGenerator; clock: Clock 
     },
     async get(id: string) {
       return db.get('SELECT * FROM trades WHERE id = ?', [id]);
+    },
+    async listForHistory(accountId: string) {
+      const rows = await db.all<{
+        id: string;
+        symbol: string;
+        direction: string;
+        status: string;
+        opened_at: number;
+        closed_at: number | null;
+        net_pnl: string | null;
+        r_multiple: string | null;
+        notes: string;
+        emotion: string | null;
+        source: string;
+      }>(
+        `SELECT id, symbol, direction, status, opened_at, closed_at, net_pnl, r_multiple, notes, emotion, source
+         FROM trades WHERE account_id = ?
+         ORDER BY COALESCE(closed_at, opened_at) DESC, id DESC`,
+        [accountId],
+      );
+      const out = [];
+      for (const r of rows) {
+        const tagRows = await db.all<{ tag_id: string }>(
+          'SELECT tag_id FROM trade_tags WHERE trade_id = ?',
+          [r.id],
+        );
+        out.push({ ...r, tagIds: tagRows.map((t) => t.tag_id) });
+      }
+      return out;
+    },
+    async getTagIds(tradeId: string) {
+      const tagRows = await db.all<{ tag_id: string }>(
+        'SELECT tag_id FROM trade_tags WHERE trade_id = ?',
+        [tradeId],
+      );
+      return tagRows.map((t) => t.tag_id);
+    },
+    async getInput(id: string): Promise<TradeInput | null> {
+      const row = await db.get<TradeRow>('SELECT * FROM trades WHERE id = ?', [id]);
+      if (!row) return null;
+      const tagIds = await db.all<{ tag_id: string }>(
+        'SELECT tag_id FROM trade_tags WHERE trade_id = ?',
+        [id],
+      );
+      return rowToTradeInput(
+        row,
+        tagIds.map((t) => t.tag_id),
+      );
+    },
+    async restore(row: TradeRow, tagIds: string[], source: 'manual' | 'import' | 'demo') {
+      await db.transaction(async (tx) => {
+        const now = deps.clock.now();
+        await tx.run(
+          `INSERT INTO trades (
+            id, account_id, symbol, base_asset, quote_asset, instrument, direction, status,
+            opened_at, closed_at, entry_price, exit_price, quantity, max_quantity, stop_price,
+            leverage, fees, fees_complete, funding, funding_status, pnl_source,
+            gross_pnl, net_pnl, risk_amount, r_multiple, r_unavailable_reason,
+            emotion, notes, source, import_batch_id, calc_version, created_at, updated_at
+          ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          [
+            row.id,
+            row.account_id,
+            row.symbol,
+            row.base_asset,
+            row.quote_asset,
+            row.instrument,
+            row.direction,
+            row.status,
+            row.opened_at,
+            row.closed_at,
+            row.entry_price,
+            row.exit_price,
+            row.quantity,
+            row.max_quantity,
+            row.stop_price,
+            row.leverage,
+            row.fees,
+            row.fees_complete,
+            row.funding,
+            row.funding_status,
+            row.pnl_source,
+            row.gross_pnl,
+            row.net_pnl,
+            row.risk_amount,
+            row.r_multiple,
+            row.r_unavailable_reason,
+            row.emotion,
+            row.notes,
+            source,
+            row.import_batch_id,
+            row.calc_version,
+            row.created_at,
+            now,
+          ],
+        );
+        for (const tagId of tagIds) {
+          await tx.run('INSERT INTO trade_tags (trade_id, tag_id) VALUES (?, ?)', [row.id, tagId]);
+        }
+      });
     },
     async listForAccount(accountId: string) {
       return db.all(

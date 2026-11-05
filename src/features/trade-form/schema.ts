@@ -8,6 +8,8 @@ export const tradeFormSchema = z.object({
   quantity: z.string().min(1, 'Size required'),
   stop: z.string().optional(),
   fees: z.string().optional(),
+  emotion: z.enum(['calm', 'fomo', 'revenge', 'fear']).optional(),
+  tagIds: z.array(z.string()).optional(),
   notes: z.string().max(4000).optional(),
 });
 
