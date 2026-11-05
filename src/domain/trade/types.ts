@@ -115,6 +115,6 @@ export type PositionErrorCode =
 
 export interface PositionBuildResult {
   closed: BuiltTrade[];
-  stillOpen: Array<{ key: FillKey; sourceIndexes: number[] }>;
-  errors: Array<{ sourceIndex: number; code: PositionErrorCode }>;
+  stillOpen: { key: FillKey; sourceIndexes: number[] }[];
+  errors: { sourceIndex: number; code: PositionErrorCode }[];
 }

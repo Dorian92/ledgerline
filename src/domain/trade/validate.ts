@@ -1,4 +1,4 @@
-import { dec, isPos, isZero, type Dec } from '../money/dec';
+import { isPos } from '../money/dec';
 import type { QuoteCurrency } from '../money/types';
 import type { AccountQuote, TradeInput, ValidationResult } from './types';
 

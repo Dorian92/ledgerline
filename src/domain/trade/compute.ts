@@ -1,4 +1,4 @@
-import { add, div, mul, sub, ROUND_HALF_EVEN, ZERO, type Dec } from '../money/dec';
+import { add, div, mul, sub, ROUND_HALF_EVEN, type Dec } from '../money/dec';
 import type { TradeDerived, TradeInput } from './types';
 
 export const CALC_VERSION = 1;
