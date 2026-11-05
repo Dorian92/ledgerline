@@ -1,15 +1,13 @@
 import { View, StyleSheet } from 'react-native';
 
-import { Text } from '@/ui/Text';
+import { EmptyState, ScreenHeader } from '@/ui/primitives';
 import { color, space } from '@/ui/tokens';
 
 export default function TradesTab() {
   return (
     <View style={styles.container}>
-      <Text variant="title">Trades</Text>
-      <Text variant="secondary" style={{ marginTop: space.md }}>
-        No trades yet.
-      </Text>
+      <ScreenHeader title="Trades" />
+      <EmptyState title="No trades yet." body="Add a trade or import a CSV from Settings." />
     </View>
   );
 }

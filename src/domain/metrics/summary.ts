@@ -3,15 +3,7 @@ import { dec } from '@/domain/money/dec';
 import { fromCanonical } from '@/domain/money/canonical';
 import { classifyOutcome } from '@/domain/trade/compute';
 
-export interface MetricTrade {
-  id: string;
-  closed_at: number;
-  net_pnl: string;
-  r_multiple: string | null;
-  opened_at: number;
-  fees_complete: number;
-  funding_status: string;
-}
+import type { MetricTrade } from './types';
 
 export interface Summary {
   netPnl: Dec;
