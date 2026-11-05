@@ -1,24 +1,24 @@
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from './Text';
 import { color, space } from './tokens';
 
-const tabs = ['Home', 'Trades', 'Insights', 'Settings'] as const;
+const labels = ['Home', 'Trades', 'Insights', 'Settings'] as const;
 
-export function TabBar({ state, navigation }: BottomTabBarProps) {
+export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
   return (
     <View style={styles.bar}>
       {state.routes.map((route, index) => {
         const focused = state.index === index;
-        const label = tabs[index] ?? route.name;
+        const label = labels[index] ?? route.name;
         return (
           <Pressable
             key={route.key}
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
             accessibilityLabel={label}
-            onPress={() => navigation.navigate(route.name)}
+            onPress={() => navigateToTab(route.key)}
             style={styles.tab}
           >
             {focused ? <View style={styles.dot} /> : <View style={styles.dotPlaceholder} />}
