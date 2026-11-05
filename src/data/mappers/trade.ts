@@ -1,4 +1,5 @@
 import { fromCanonical, toCanonical } from '@/domain/money/canonical';
+import type { QuoteCurrency } from '@/domain/money/types';
 import { CALC_VERSION, computeTrade } from '@/domain/trade';
 import type { TradeInput } from '@/domain/trade/types';
 

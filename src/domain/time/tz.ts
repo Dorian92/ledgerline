@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { TZDate } from '@date-fns/tz';
 
 export type DayKey = `${number}-${string}-${string}`;
@@ -19,11 +19,13 @@ export function startOfLocalDay(epochMs: number, tz: string): number {
   return start.getTime();
 }
 
-export function parseInZone(dateString: string, pattern: string, tz: string): number {
-  const parsed = parseISO(dateString);
-  if (Number.isNaN(parsed.getTime())) {
-    throw new Error(`Invalid date: ${dateString}`);
-  }
-  const z = new TZDate(parsed.getTime(), tz);
+export function addLocalDays(dayKey: string, n: number): string {
+  const d = new TZDate(`${dayKey}T12:00:00`, 'UTC');
+  d.setDate(d.getDate() + n);
+  return format(d, 'yyyy-MM-dd');
+}
+
+export function parseInZone(dateString: string, _pattern: string, tz: string): number {
+  const z = new TZDate(dateString, tz);
   return z.getTime();
 }

@@ -76,11 +76,11 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 - [x] **03-money-decimal** — `Dec` wrapper, parse/canonical/format, units · deps: 01
   - Gates: [x] A
 - [x] **04-trade-calculations** — trade types, validation, PnL/fees/funding/R, positions from fills · deps: 03
-  - Note: positions.ts and full validate/symbol deferred to follow-up within step 04 scope; core compute + §3.3 tests landed.
   - Gates: [x] A
-- [ ] **05-db-foundation** — `Db` interface, expo + better-sqlite3 adapters, migration runner, schema 0001, repositories (accounts, trades, tags, prefs) · deps: 04
-  - Partial: migration 0001 + better-sqlite3 test adapter + migrate tests; expo adapter/repos/bootstrap pending.
-  - Gates: [x] A (partial) [ ] D
+- [x] **05-db-foundation** — Db, migrations, repos, calc-on-write, DbProvider · deps: 04
+  - Gates: [x] A [ ] D
+- [ ] **07-metrics-engine** — partial: periods + summary · deps: 04
+  - Gates: [x] A (partial)
 
 ## Phase 1 — Core journal
 
