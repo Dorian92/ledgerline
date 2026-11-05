@@ -38,8 +38,7 @@ export function parseSymbol(
     if (s.endsWith(q)) {
       const base = s.slice(0, -q.length).replace(/[-/]$/, '');
       if (base.length >= 1) {
-        const display =
-          instrument === 'perp' ? `${base}-PERP` : `${base}/${q}`;
+        const display = instrument === 'perp' ? `${base}-PERP` : `${base}/${q}`;
         return { display, base, quote: q, instrument };
       }
     }

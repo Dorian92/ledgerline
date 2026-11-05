@@ -2,7 +2,9 @@ import { dec } from '../../money/dec';
 import { buildPositionsFromFills } from '../positions';
 import type { FillInput } from '../types';
 
-function fill(partial: Partial<FillInput> & Pick<FillInput, 'sourceIndex' | 'side' | 'price' | 'quantity'>): FillInput {
+function fill(
+  partial: Partial<FillInput> & Pick<FillInput, 'sourceIndex' | 'side' | 'price' | 'quantity'>,
+): FillInput {
   return {
     key: { symbol: 'BTC-PERP', positionSide: 'long' },
     feeQuote: dec('0'),

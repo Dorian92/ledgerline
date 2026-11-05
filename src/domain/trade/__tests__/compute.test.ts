@@ -2,11 +2,7 @@ import * as fc from 'fast-check';
 
 import { dec } from '../../money/dec';
 import type { TradeInput } from '../types';
-import {
-  classifyOutcome,
-  computeTrade,
-  grossFromPrices,
-} from '../compute';
+import { classifyOutcome, computeTrade, grossFromPrices } from '../compute';
 
 const baseInput = (): TradeInput => ({
   accountId: 'a1',
@@ -64,9 +60,9 @@ describe('R unavailable', () => {
     expect(computeTrade({ ...baseInput(), stopPrice: null }).rUnavailableReason).toBe('no_stop');
   });
   it('stop wrong side long', () => {
-    expect(
-      computeTrade({ ...baseInput(), stopPrice: dec('70000') }).rUnavailableReason,
-    ).toBe('stop_wrong_side');
+    expect(computeTrade({ ...baseInput(), stopPrice: dec('70000') }).rUnavailableReason).toBe(
+      'stop_wrong_side',
+    );
   });
 });
 
@@ -94,7 +90,11 @@ describe('property gross symmetry', () => {
   it('long vs short', () => {
     fc.assert(
       fc.property(
-        fc.tuple(fc.double({ min: 1, max: 1e6, noNaN: true }), fc.double({ min: 1, max: 1e6, noNaN: true }), fc.double({ min: 0.001, max: 100, noNaN: true })),
+        fc.tuple(
+          fc.double({ min: 1, max: 1e6, noNaN: true }),
+          fc.double({ min: 1, max: 1e6, noNaN: true }),
+          fc.double({ min: 0.001, max: 100, noNaN: true }),
+        ),
         ([e, x, q]) => {
           const entry = dec(String(Math.round(e * 100) / 100));
           const exit = dec(String(Math.round(x * 100) / 100));

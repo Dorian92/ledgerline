@@ -57,15 +57,7 @@ export interface AccountQuote {
 }
 
 export type ValidationField =
-  | 'symbol'
-  | 'quote'
-  | 'entry'
-  | 'exit'
-  | 'quantity'
-  | 'stop'
-  | 'closedAt'
-  | 'fees'
-  | 'notes';
+  'symbol' | 'quote' | 'entry' | 'exit' | 'quantity' | 'stop' | 'closedAt' | 'fees' | 'notes';
 
 export interface ValidationResult {
   ok: boolean;
@@ -109,9 +101,7 @@ export interface BuiltTrade {
 }
 
 export type PositionErrorCode =
-  | 'opened_before_export'
-  | 'inconsistent_hedge_flip'
-  | 'residual_quantity';
+  'opened_before_export' | 'inconsistent_hedge_flip' | 'residual_quantity';
 
 export interface PositionBuildResult {
   closed: BuiltTrade[];

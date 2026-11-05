@@ -1,11 +1,5 @@
 import { add, div, max, mul, sub, dec, ZERO, type Dec } from '../money/dec';
-import type {
-  BuiltTrade,
-  FillInput,
-  FillKey,
-  PositionBuildResult,
-  PositionSide,
-} from './types';
+import type { BuiltTrade, FillInput, FillKey, PositionBuildResult, PositionSide } from './types';
 
 interface PositionState {
   qty: Dec;
@@ -82,9 +76,8 @@ function signedQtyAfterOpen(
 
 function buildClosedTrade(state: PositionState, symbol: string): BuiltTrade {
   const exitPrice = div(state.exitNotional, state.exitQtySum);
-  const direction = state.qty.isPositive() || state.maxAbsQty.equals(state.exitQtySum)
-    ? 'long'
-    : 'short';
+  const direction =
+    state.qty.isPositive() || state.maxAbsQty.equals(state.exitQtySum) ? 'long' : 'short';
   const dir: 'long' | 'short' =
     state.realized.gte(ZERO) && exitPrice.gte(state.avgEntry) ? 'long' : direction;
   return {

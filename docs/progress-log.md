@@ -3,6 +3,7 @@
 One entry per step: date, step, commit SHA(s), gates run with results, deviations/decisions, follow-ups.
 
 ## 2026-11-05 — execution (partial)
+
 - Steps 01–04 complete (gate A). Step 02 partial (tab shell). Step 05 partial (migrations). Step 11 honest unsupported stubs.
 - U-01 mockup PNGs not on VM disk — `docs/design/mockups/README.md` only. Gate D/V pending (no Android SDK).
 
