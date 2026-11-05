@@ -3,6 +3,7 @@
 One entry per step: date, step, commit SHA(s), gates run with results, deviations/decisions, follow-ups.
 
 ## 2026-11-05 — step 01-scaffold
+
 - Expo SDK 58 scaffold, eslint boundaries, jest, placeholder home screen. Gate A green. Gate D pending (no Android SDK in VM).
 - Lint probe: domain importing react-native fails eslint (verified).
 
