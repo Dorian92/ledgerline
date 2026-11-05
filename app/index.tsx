@@ -1,23 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Ledgerline</Text>
-    </View>
-  );
+export default function Index() {
+  return <Redirect href="/(tabs)" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B0E14',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    color: '#E8ECF4',
-    fontSize: 26,
-    fontWeight: '700',
-  },
-});

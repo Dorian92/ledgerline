@@ -20,7 +20,7 @@ const config: ExpoConfig = {
       backgroundColor: '#7C5CFF',
     },
   },
-  plugins: ['./plugins/withNoBackup'],
+  plugins: ['./plugins/withNoBackup', 'expo-sqlite'],
 };
 
 export default config;

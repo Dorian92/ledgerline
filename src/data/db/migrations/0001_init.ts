@@ -1,0 +1,91 @@
+export const migration0001 = {
+  version: 1,
+  up: [
+    `CREATE TABLE app_prefs (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    )`,
+    `CREATE TABLE accounts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 40),
+      exchange TEXT CHECK (exchange IN ('binance','bybit','okx','other')),
+      quote_currency TEXT NOT NULL CHECK (quote_currency IN ('USDT','USDC','USD')),
+      starting_balance TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      archived_at INTEGER
+    )`,
+    `CREATE TABLE import_batches (
+      id TEXT PRIMARY KEY,
+      account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      exchange TEXT NOT NULL,
+      format_id TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      file_sha256 TEXT NOT NULL,
+      source_tz TEXT NOT NULL,
+      total_rows INTEGER NOT NULL,
+      imported_rows INTEGER NOT NULL,
+      duplicate_rows INTEGER NOT NULL,
+      error_rows INTEGER NOT NULL,
+      trades_created INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      undone_at INTEGER
+    )`,
+    `CREATE TABLE trades (
+      id TEXT PRIMARY KEY,
+      account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      symbol TEXT NOT NULL,
+      base_asset TEXT NOT NULL,
+      quote_asset TEXT NOT NULL,
+      instrument TEXT NOT NULL CHECK (instrument IN ('perp','spot')),
+      direction TEXT NOT NULL CHECK (direction IN ('long','short')),
+      status TEXT NOT NULL CHECK (status IN ('open','closed')),
+      opened_at INTEGER NOT NULL,
+      closed_at INTEGER,
+      entry_price TEXT NOT NULL,
+      exit_price TEXT,
+      quantity TEXT NOT NULL,
+      max_quantity TEXT NOT NULL,
+      stop_price TEXT,
+      leverage TEXT,
+      fees TEXT NOT NULL DEFAULT '0',
+      fees_complete INTEGER NOT NULL DEFAULT 1,
+      funding TEXT NOT NULL DEFAULT '0',
+      funding_status TEXT NOT NULL DEFAULT 'none',
+      pnl_source TEXT NOT NULL CHECK (pnl_source IN ('computed','exchange')),
+      gross_pnl TEXT,
+      net_pnl TEXT,
+      risk_amount TEXT,
+      r_multiple TEXT,
+      r_unavailable_reason TEXT,
+      emotion TEXT CHECK (emotion IN ('calm','fomo','revenge','fear')),
+      notes TEXT NOT NULL DEFAULT '' CHECK (length(notes) <= 4000),
+      source TEXT NOT NULL CHECK (source IN ('manual','import','demo')),
+      import_batch_id TEXT REFERENCES import_batches(id) ON DELETE SET NULL,
+      calc_version INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      CHECK ((status = 'closed') = (closed_at IS NOT NULL AND exit_price IS NOT NULL))
+    )`,
+    `CREATE INDEX trades_account_closed ON trades(account_id, status, closed_at)`,
+    `CREATE TABLE tags (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 24),
+      created_at INTEGER NOT NULL,
+      archived_at INTEGER
+    )`,
+    `CREATE UNIQUE INDEX tags_name ON tags(name COLLATE NOCASE)`,
+    `CREATE TABLE trade_tags (
+      trade_id TEXT NOT NULL REFERENCES trades(id) ON DELETE CASCADE,
+      tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+      PRIMARY KEY (trade_id, tag_id)
+    )`,
+    `CREATE TABLE import_fingerprints (
+      account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      fingerprint TEXT NOT NULL,
+      batch_id TEXT NOT NULL REFERENCES import_batches(id) ON DELETE CASCADE,
+      PRIMARY KEY (account_id, fingerprint)
+    )`,
+  ],
+};

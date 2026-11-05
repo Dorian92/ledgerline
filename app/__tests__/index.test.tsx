@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react-native';
 
-import HomeScreen from '../index';
+import HomeTab from '../(tabs)/index';
 
-describe('HomeScreen', () => {
-  it('renders Ledgerline', () => {
-    render(<HomeScreen />);
-    expect(screen.getByText('Ledgerline')).toBeTruthy();
+describe('HomeTab', () => {
+  it('renders dashboard placeholder', () => {
+    render(<HomeTab />);
+    expect(screen.getByText('Dashboard')).toBeTruthy();
   });
 });
