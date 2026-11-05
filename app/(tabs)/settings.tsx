@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 
 import { useRepos } from '@/data/DbProvider';
+import { refreshTodayWidget } from '@/platform/widget/update';
 import { usePrivacy, resolveDisplayTz } from '@/state/privacy';
 import { useSession } from '@/state/session';
 import { ScreenHeader } from '@/ui/primitives';
@@ -21,6 +22,7 @@ export default function SettingsTab() {
   const persistHide = async (v: boolean) => {
     setHideAmounts(v);
     await repos.prefs.set('hide_amounts', v);
+    void refreshTodayWidget();
   };
 
   const persistTz = async (v: 'device' | 'UTC') => {

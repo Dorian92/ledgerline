@@ -76,6 +76,7 @@ const prefSchemas = {
   display_tz: z.enum(['device', 'UTC']),
   hide_amounts: z.boolean(),
   app_lock_enabled: z.boolean(),
+  entitlement_pro: z.boolean(),
   reminder_hour: z.number().int().min(0).max(23),
   reminder_minute: z.number().int().min(0).max(59),
 } as const;

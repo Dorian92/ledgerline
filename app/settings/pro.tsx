@@ -1,11 +1,13 @@
 import { View, StyleSheet } from 'react-native';
 
+import { useRepos } from '@/data/DbProvider';
 import { usePro } from '@/state/pro';
 import { ScreenHeader, EmptyState } from '@/ui/primitives';
 import { ButtonUi } from '@/ui/Button';
 import { color, space } from '@/ui/tokens';
 
 export default function ProScreen() {
+  const repos = useRepos();
   const entitled = usePro((s) => s.entitled);
   const mockPurchase = usePro((s) => s.mockPurchase);
   return (
@@ -19,7 +21,7 @@ export default function ProScreen() {
             : 'Mock billing for development. Play Billing ships in step 27.'
         }
       />
-      {!entitled ? <ButtonUi title="Mock purchase" onPress={mockPurchase} /> : null}
+      {!entitled ? <ButtonUi title="Mock purchase" onPress={() => mockPurchase(repos)} /> : null}
     </View>
   );
 }

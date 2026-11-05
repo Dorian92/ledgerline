@@ -4,6 +4,7 @@ import { testIds } from '@/data/ids.testutil';
 import { systemClock } from '@/data/clock';
 import { buildImportPlan } from '@/domain/import/plan';
 import { testClosedAdapter } from '@/domain/import/testAdapter';
+import { testFillsAdapter } from '@/domain/import/testFillsAdapter';
 
 const CSV = `Time,Symbol,Side,Qty,Entry,Exit
 2024-01-01T12:00:00Z,BTC-PERP,long,0.1,100,101
@@ -93,6 +94,31 @@ describe('imports repo', () => {
     ).rejects.toBeInstanceOf(ImportCommitError);
     const count = await db.get<{ c: number }>('SELECT COUNT(*) as c FROM trades');
     expect(count?.c).toBe(0);
+  });
+
+  it('persists fills for fill imports', async () => {
+    const db = await createTestDb();
+    const now = systemClock.now();
+    await db.run(
+      `INSERT INTO accounts (id, name, quote_currency, created_at, updated_at) VALUES (?,?,?,?,?)`,
+      ['acc1', 'Main', 'USD', now, now],
+    );
+    const imports = createImportsRepo(db, { ids: testIds(), clock: systemClock, mode: 'real' });
+    const csv = `Time,Symbol,Side,Qty,Price,Fee
+2024-01-01T10:00:00Z,BTC-PERP,buy,1,100,0.1
+2024-01-01T11:00:00Z,BTC-PERP,sell,1,105,0.1
+`;
+    const plan = await buildImportPlan({
+      text: csv,
+      adapters: [testFillsAdapter],
+      quoteCurrency: 'USD',
+      sourceTz: 'UTC',
+      existingFingerprints: new Set(),
+    });
+    if (!('trades' in plan)) throw new Error('plan failed');
+    await imports.commit({ accountId: 'acc1', plan, fileName: 'fills.csv' });
+    const fills = await db.all('SELECT id FROM fills');
+    expect(fills.length).toBe(2);
   });
 
   it('blocks demo mode', async () => {

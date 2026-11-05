@@ -2,6 +2,7 @@ import type { Db } from '@/data/db/types';
 import type { Clock } from '@/data/clock';
 import type { IdGenerator } from '@/data/ids';
 import { tradeInputToRow } from '@/data/mappers/trade';
+import { fillInputToRow } from '@/data/mappers/fill';
 import type { ImportPlan } from '@/domain/import/types';
 import { validateTradeInput, accountFromQuote } from '@/domain/trade';
 import type { TradeInput } from '@/domain/trade/types';
@@ -119,6 +120,28 @@ export function createImportsRepo(
             await tx.run(
               'INSERT INTO import_fingerprints (account_id, fingerprint, batch_id) VALUES (?,?,?)',
               [opts.accountId, fp, batchId],
+            );
+          }
+          for (const fill of trade.fills ?? []) {
+            const fillId = deps.ids.randomUUID();
+            const fr = fillInputToRow(fillId, id, fill, input.quoteAsset);
+            await tx.run(
+              `INSERT INTO fills (
+                id, trade_id, side, price, quantity, fee, fee_asset,
+                reported_realized_pnl, executed_at, exchange_trade_id
+              ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+              [
+                fr.id,
+                fr.trade_id,
+                fr.side,
+                fr.price,
+                fr.quantity,
+                fr.fee,
+                fr.fee_asset,
+                fr.reported_realized_pnl,
+                fr.executed_at,
+                fr.exchange_trade_id,
+              ],
             );
           }
           tradesCreated++;

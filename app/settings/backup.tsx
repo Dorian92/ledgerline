@@ -13,6 +13,7 @@ import {
   snapshotBackup,
 } from '@/data/backup/service';
 import { useRealModeOnly } from '@/features/guards';
+import { refreshTodayWidget } from '@/platform/widget/update';
 import { ScreenHeader, EmptyState } from '@/ui/primitives';
 import { ButtonUi } from '@/ui/Button';
 import { Text } from '@/ui/Text';
@@ -70,6 +71,7 @@ export default function BackupScreen() {
         style: 'destructive',
         onPress: async () => {
           await restoreBackup(repos, parsed.backup);
+          void refreshTodayWidget();
         },
       },
     ]);
@@ -84,6 +86,7 @@ export default function BackupScreen() {
         onPress: async () => {
           await deleteAllJournalData(repos);
           await refreshMode('unset');
+          void refreshTodayWidget();
         },
       },
     ]);

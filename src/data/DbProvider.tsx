@@ -11,7 +11,9 @@ import React, {
 import { getDemoDatabase, openRealDatabase } from '@/data/bootstrap';
 import type { Repos } from './DbProvider.types';
 import { useSession, type AppMode } from '@/state/session';
+import { refreshTodayWidget } from '@/platform/widget/update';
 import { usePrivacy } from '@/state/privacy';
+import { usePro } from '@/state/pro';
 
 export type { Repos };
 
@@ -46,6 +48,7 @@ export function DbProvider({ children }: { children: ReactNode }) {
       await r.prefs.set('mode', mode);
       const accounts = await r.accounts.list();
       setActiveAccountId(accounts[0]?.id ?? null);
+      void refreshTodayWidget();
     },
     [setActiveAccountId, setMode],
   );
@@ -55,6 +58,8 @@ export function DbProvider({ children }: { children: ReactNode }) {
       try {
         const { repos: realRepos } = await openRealDatabase();
         const mode = (await realRepos.prefs.get('mode')) ?? 'unset';
+        const entitled = (await realRepos.prefs.get('entitlement_pro')) ?? false;
+        usePro.getState().hydrate(entitled);
         setMode(mode);
         if (mode === 'demo') {
           setRepos((await getDemoDatabase()).repos);

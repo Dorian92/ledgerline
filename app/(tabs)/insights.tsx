@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useRepos } from '@/data/DbProvider';
 import { calendarMonth, computeSummary, hourOfDay, periodRange } from '@/domain/metrics';
+import { dec } from '@/domain/money/dec';
 import { detectTilt } from '@/domain/insights/tilt';
 import { ProGate, usePro } from '@/state/pro';
 import { EquityChart } from '@/ui/charts/EquityChart';
@@ -12,19 +13,22 @@ import { ButtonUi } from '@/ui/Button';
 import { ScreenHeader } from '@/ui/primitives';
 import { Text } from '@/ui/Text';
 import { color, space } from '@/ui/tokens';
-import { dec } from '@/domain/money/dec';
+import { resolveDisplayTz, usePrivacy } from '@/state/privacy';
 
 function InsightsBody() {
   const repos = useRepos();
+  const displayPref = usePrivacy((s) => s.displayTz);
   const accountId = useSession((s) => s.activeAccountId);
   const { data } = useQuery({
-    queryKey: ['insights', accountId],
+    queryKey: ['insights', accountId, displayPref],
     enabled: !!accountId,
     queryFn: async () => {
       const rows = await repos.trades.listClosedForMetrics(accountId!);
-      const tz = 'UTC';
-      const summary = computeSummary(rows as never, periodRange('ALL', Date.now(), tz), {
-        startingBalance: dec('10000'),
+      const account = await repos.accounts.get(accountId!);
+      const now = Date.now();
+      const tz = resolveDisplayTz(displayPref);
+      const summary = computeSummary(rows as never, periodRange('ALL', now, tz), {
+        startingBalance: account?.starting_balance ? dec(account.starting_balance) : null,
       });
       const cal = calendarMonth(
         rows as never,
@@ -82,6 +86,7 @@ function InsightsBody() {
 
 export default function InsightsTab() {
   const mockPurchase = usePro((s) => s.mockPurchase);
+  const repos = useRepos();
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <ScreenHeader title="Insights" />
@@ -89,7 +94,7 @@ export default function InsightsTab() {
         fallback={
           <View style={styles.paywall}>
             <Text variant="secondary">Insights charts are part of Ledgerline Pro.</Text>
-            <ButtonUi title="Mock purchase" onPress={mockPurchase} />
+            <ButtonUi title="Mock purchase" onPress={() => mockPurchase(repos)} />
           </View>
         }
       >

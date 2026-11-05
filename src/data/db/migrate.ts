@@ -1,7 +1,8 @@
 import type { Db } from './types';
 import { migration0001 } from './migrations/0001_init';
+import { migration0002 } from './migrations/0002_fills';
 
-const migrations = [migration0001];
+const migrations = [migration0001, migration0002];
 
 export async function migrate(db: Db): Promise<number> {
   await db.exec('PRAGMA foreign_keys = ON');

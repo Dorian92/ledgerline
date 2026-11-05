@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useRepos } from '@/data/DbProvider';
 import { qk } from '@/data/queries/keys';
+import { refreshTodayWidget } from '@/platform/widget/update';
 import { dec } from '@/domain/money/dec';
 import { parseUserDecimal } from '@/domain/money/parse';
 import type { TradeInput } from '@/domain/trade/types';
@@ -84,6 +85,7 @@ export function useCreateTrade() {
     mutationFn: (input: TradeInput) => repos.trades.create(input, 'manual'),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk.root(mode, accountId) });
+      void refreshTodayWidget();
     },
   });
 }
@@ -98,6 +100,7 @@ export function useUpdateTrade() {
       repos.trades.update(id, input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk.root(mode, accountId) });
+      void refreshTodayWidget();
     },
   });
 }
@@ -130,6 +133,7 @@ export function useDeleteTrade() {
     mutationFn: (id: string) => repos.trades.delete(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk.root(mode, accountId) });
+      void refreshTodayWidget();
     },
   });
 }
