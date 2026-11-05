@@ -1,15 +1,18 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from './Text';
 import { color, space } from './tokens';
 
 const labels = ['Home', 'Trades', 'Insights', 'Settings'] as const;
+const hrefs = ['/(tabs)', '/(tabs)/trades', '/(tabs)/insights', '/(tabs)/settings'] as const;
 
-export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
+export function TabBar({ state }: Pick<BottomTabBarProps, 'state'>) {
+  const router = useRouter();
   return (
     <View style={styles.bar}>
-      {state.routes.map((route, index) => {
+      {state.routes.map((route: { key: string; name: string }, index: number) => {
         const focused = state.index === index;
         const label = labels[index] ?? route.name;
         return (
@@ -18,7 +21,7 @@ export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
             accessibilityLabel={label}
-            onPress={() => navigateToTab(route.key)}
+            onPress={() => router.push(hrefs[index] ?? '/(tabs)')}
             style={styles.tab}
           >
             {focused ? <View style={styles.dot} /> : <View style={styles.dotPlaceholder} />}

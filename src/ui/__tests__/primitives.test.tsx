@@ -45,9 +45,12 @@ describe('EmptyState', () => {
   });
 });
 
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 describe('TabBar', () => {
   it('renders four tabs', () => {
-    const navigation = { navigate: jest.fn() } as never;
     const state = {
       index: 0,
       routes: [
@@ -57,14 +60,7 @@ describe('TabBar', () => {
         { key: '4', name: 'settings' },
       ],
     } as never;
-    render(
-      <TabBar
-        state={state}
-        navigation={navigation}
-        descriptors={{} as never}
-        insets={{} as never}
-      />,
-    );
+    render(<TabBar state={state} />);
     expect(screen.getAllByRole('tab')).toHaveLength(4);
   });
 });
