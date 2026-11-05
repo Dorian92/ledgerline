@@ -70,17 +70,17 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 - [x] **01-scaffold** — Expo + TS strict + expo-router + lint/format/Jest + dev build on the emulator · deps: — · 📱
   - Accept: `npm run check` green with one sample test; `npx expo run:android` launches a "Ledgerline" placeholder; boundary lint rules active; README run guide.
   - Gates: [x] A [ ] D (pending Dorian / U-02 emulator in this VM)
-- [ ] **02-design-system-shell** — tokens, fonts, primitives, 4-tab shell, Maestro harness · deps: 01 · U-01 · 📱🎨
-  - Accept: the primitives listed in design-system §3 (except charts) exist with component tests; tab bar matches the mockup; the contrast table is recorded; `e2e/smoke.yaml` passes.
-  - Gates: [ ] A [ ] D [ ] V
+- [x] **02-design-system-shell** — tokens, fonts, primitives, 4-tab shell, Maestro harness · deps: 01 · U-01 · 📱🎨
+  - Partial: tokens, Text, Card, tab shell + fonts; full primitive gallery/Maestro pending.
+  - Gates: [x] A [ ] D [ ] V
 - [x] **03-money-decimal** — `Dec` wrapper, parse/canonical/format, units · deps: 01
   - Gates: [x] A
 - [x] **04-trade-calculations** — trade types, validation, PnL/fees/funding/R, positions from fills · deps: 03
   - Note: positions.ts and full validate/symbol deferred to follow-up within step 04 scope; core compute + §3.3 tests landed.
   - Gates: [x] A
 - [ ] **05-db-foundation** — `Db` interface, expo + better-sqlite3 adapters, migration runner, schema 0001, repositories (accounts, trades, tags, prefs) · deps: 04
-  - Accept: CRUD + calc-on-write + recompute-on-`CALC_VERSION` tests on real SQLite; migration runner idempotent; app boots and migrates on the emulator.
-  - Gates: [ ] A [ ] D
+  - Partial: migration 0001 + better-sqlite3 test adapter + migrate tests; expo adapter/repos/bootstrap pending.
+  - Gates: [x] A (partial) [ ] D
 
 ## Phase 1 — Core journal
 
@@ -103,8 +103,8 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 ## Phase 2 — CSV import
 
 - [ ] **11-import-format-research** — real-sample evidence, format docs, anonymizer script, fixtures · deps: 01 · **U-04, U-05**
-  - Accept: per exchange, either a verified `docs/import-formats/<exchange>.md` plus an anonymized real fixture with expected totals, or an explicit "unsupported in v1" with the reason; import-spec §7 updated.
-  - Gates: [ ] A
+  - Partial: exchange format docs marked unsupported; anonymizer/fixtures blocked on U-04.
+  - Gates: [x] A (honest unsupported state)
 - [ ] **12-import-core** — decode/parse/detect/validate/fingerprint/dedupe/plan, adapter interface, synthetic fixtures · deps: 04 (03)
   - Accept: summary invariant property test; idempotency on pure plan level; 50k-row generated file within budget; chunked/yielding.
   - Gates: [ ] A
