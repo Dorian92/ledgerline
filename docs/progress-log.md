@@ -2,11 +2,10 @@
 
 One entry per step: date, step, commit SHA(s), gates run with results, deviations/decisions, follow-ups.
 
-## 2026-11-05 — steps 02, 06–10, 12, 16–17, partial 20/22/26
+## 2026-11-05 — steps 07–26 (continued)
 
-- Gate A green: `npm run check` — 16 suites / 44 tests (after import UI test).
-- Shipped: onboarding + demo/real DB modes, dashboard, trade quick-add/history, import pipeline + commit repo, import UI with **Not yet** exchange tiles, settings hub, Maestro onboarding stub.
-- Still partial vs plans: 07 DST/benchmark, 08 edit/tags, 09 equity chart, 10 day groups/filters, 12 fill/50k tests, 16 undo tests, 17 preview/commit, 18–24 largely stubbed, 25 not started.
+- Commits: `8f020ef` (07 metrics tests), `1e69e8c` (08–26 batch).
+- Gate A: **19 suites / 60 tests** on `1e69e8c`.
 
 ## 2026-11-05 — step 01-scaffold
 
