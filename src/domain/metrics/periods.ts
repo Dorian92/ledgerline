@@ -1,4 +1,4 @@
-import { startOfLocalDay, localDayKey, addLocalDays, type DayKey } from '@/domain/time/tz';
+import { startOfLocalDay, localDayKey, addLocalDays, startOfLocalDayKey, type DayKey } from '@/domain/time/tz';
 
 export type PeriodKey = '7D' | '30D' | 'YTD' | 'ALL';
 
@@ -15,15 +15,15 @@ export function periodRange(key: PeriodKey, now: number, tz: string): PeriodRang
   }
   if (key === '7D') {
     const startDay = addLocalDays(today, -6);
-    return { start: startOfLocalDay(new Date(`${startDay}T00:00:00`).getTime(), tz), end };
+    return { start: startOfLocalDayKey(startDay, tz), end };
   }
   if (key === '30D') {
     const startDay = addLocalDays(today, -29);
-    return { start: startOfLocalDay(new Date(`${startDay}T00:00:00`).getTime(), tz), end };
+    return { start: startOfLocalDayKey(startDay, tz), end };
   }
   const year = today.slice(0, 4);
   return {
-    start: startOfLocalDay(new Date(`${year}-01-01T00:00:00`).getTime(), tz),
+    start: startOfLocalDayKey(`${year}-01-01`, tz),
     end,
   };
 }

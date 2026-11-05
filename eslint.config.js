@@ -47,6 +47,9 @@ const domainRestrictedImports = {
 };
 
 module.exports = defineConfig([
+  {
+    ignores: ['.expo/**', 'android/**', 'ios/**'],
+  },
   ...expoConfig,
   eslintConfigPrettier,
   {
