@@ -66,9 +66,7 @@ export function createPrefsRepo(db: Db, deps: { clock: Clock }) {
       if (!row) {
         return null;
       }
-      return prefSchemas[key].parse(JSON.parse(row.value)) as z.infer<
-        (typeof prefSchemas)[K]
-      >;
+      return prefSchemas[key].parse(JSON.parse(row.value)) as z.infer<(typeof prefSchemas)[K]>;
     },
     async set<K extends PrefKey>(key: K, value: z.infer<(typeof prefSchemas)[K]>) {
       prefSchemas[key].parse(value);
@@ -93,11 +91,7 @@ export function createTagsRepo(db: Db, deps: { ids: IdGenerator; clock: Clock })
       const id = deps.ids.randomUUID();
       const now = deps.clock.now();
       try {
-        await db.run('INSERT INTO tags (id, name, created_at) VALUES (?, ?, ?)', [
-          id,
-          name,
-          now,
-        ]);
+        await db.run('INSERT INTO tags (id, name, created_at) VALUES (?, ?, ?)', [id, name, now]);
       } catch {
         throw new Error('TagExistsError');
       }

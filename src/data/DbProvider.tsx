@@ -4,11 +4,7 @@ import { systemClock } from '@/data/clock';
 import type { Db } from '@/data/db/types';
 import { openExpoDb } from '@/data/db/expoDb';
 import { expoIds } from '@/data/ids.expo';
-import {
-  createAccountsRepo,
-  createPrefsRepo,
-  createTagsRepo,
-} from '@/data/repositories/index';
+import { createAccountsRepo, createPrefsRepo, createTagsRepo } from '@/data/repositories/index';
 import { createTradesRepo } from '@/data/repositories/trades';
 
 export interface Repos {
