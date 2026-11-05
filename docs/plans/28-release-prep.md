@@ -1,16 +1,20 @@
 # 28 — Release preparation (Android / Google Play)
 
 ## Goal
+
 Make Ledgerline releasable on Google Play: release build configuration and signing guide, a permissions audit, privacy policy and store listing drafts,
 Data safety answers, an updated local run guide, and execution of the pre-release checklist. Uploading and publishing stay user actions.
 
 ## Depends on / user actions
+
 26, 27 (or the step 27 decision point resolved). **U-03, U-09, U-10, U-11** (U-13 recommended).
 
 ## Read first
+
 `docs/launch-checklist.md`, `docs/monetization.md`, `docs/architecture.md` §8.
 
 ## Scope
+
 1. **Config**: the final `android.package` (U-03) and `versionCode`/`version` in `app.config.ts`, with the policy: `versionCode = major*10000 + minor*100 + patch`. Release icon and adaptive icon (violet "L" mark; simple vector-derived PNGs) and the splash.
 2. **Signing (guide + config, no secrets in git)**: `docs/release/signing.md`: generate an upload key with `keytool` (U-09), store it outside the repo, and put its path and passwords in `~/.gradle/gradle.properties` (`LEDGERLINE_UPLOAD_STORE_FILE`, …).
    A config plugin `plugins/withReleaseSigning.ts` adds a `signingConfigs.release` that reads these properties **only if present** (otherwise the release falls back to debug signing with a loud Gradle warning, so local release-variant testing still works).
@@ -27,10 +31,13 @@ Data safety answers, an updated local run guide, and execution of the pre-releas
 12. Tag `v1.0.0` in git after Dorian approves (don't tag before that).
 
 ## Out of scope
+
 Publishing to production, iOS, marketing site, EAS Submit.
 
 ## Acceptance criteria
+
 `npm run check`, `npm run e2e`, `npm run check:release -- --strict` and `npm run build:aab` all succeed; all the docs above exist; the pre-release checklist is fully ticked or the remaining items are explicitly U-owned.
 
 ## Gates
+
 A, D (release APK smoke on the emulator: onboarding, import, quick add, widget, backup, purchase via a license tester if 27 is done).

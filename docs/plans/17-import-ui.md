@@ -1,16 +1,20 @@
 # 17 — Import UI
 
 ## Goal
+
 Build the "Import trades" flow from mockup `2-import.png`: choose the exchange and file, detect the format, show summary chips and a preview table with row warnings,
 confirm the time zone, import, and show the result with undo. Honest labels for unsupported exchanges.
 
 ## Depends on
+
 06, 16, and at least one of 13/14/15 shipped.
 
 ## Read first
+
 `docs/import-spec.md` §1, §4; `docs/design-system.md` (2-import, corrections 1, 2, 7).
 
 ## Scope
+
 1. `npx expo install expo-document-picker expo-file-system`.
 2. Routes: `app/import/index.tsx` (source + file), `app/import/preview.tsx`, `app/import/result.tsx`. Entry points: Settings → Data → "Import CSV", the dashboard/history empty states, and onboarding create-account (a secondary "Import a CSV next" choice).
    All are guarded by `useRealModeOnly()`. In demo mode, show a sheet "Imports go into your journal, not the demo. Start my journal?"
@@ -37,25 +41,31 @@ confirm the time zone, import, and show the result with undo. Honest labels for 
 8. Update onboarding welcome bullet 2 with the actual supported exchange list.
 
 ## Out of scope
+
 Inline row editing, multi-file import, funding files, the share-intent "Open with Ledgerline" (future).
 
 ## Tests
+
 - Component: the preview renders chips with the correct counts and hides zero chips; the button label uses M and N; disabled when M=0; the tz selector triggers a rebuild; unsupported tile messaging; demo-mode guard sheet.
 - Integration (better-sqlite3 + domain): plan → commit → history query shows M trades; re-import → M=0 message.
 - Copy test: the messages match import-spec wording for duplicate/error rows.
 
 ## Acceptance criteria
+
 - End-to-end on the emulator with a **real anonymized** fixture pushed via `adb push fixtures/... /sdcard/Download/`: preview counts equal the fixture's meta `expected`; import; history and dashboard update; undo restores the previous totals.
 - A non-CSV/unknown file shows "We don't recognize this file" with the closest-format hint.
 
 ## Gates
+
 A, D (`e2e/import.yaml`: real mode, push the fixture beforehand via a script `e2e/scripts/push-fixtures.sh`, pick the file (Maestro can tap through the Android picker; if that's unreliable, add a dev-only "Import from bundled fixture" button in the dev gallery and use it in the flow), check the chips, import, undo), V.
 
 ## Visual check
+
 Side by side with `2-import.png`: tile row, file card with badge, chips, preview table typography (mono), row tints, messages, privacy card, pinned button + demo link.
 Expected deviations: consistent counts, "M trades from N rows", skip-only copy.
 
 ## Review checklist
+
 - [ ] Nothing here can import into the demo DB.
 - [ ] Row numbers in messages match the preview row numbers.
 - [ ] Large files don't freeze the UI for more than about 100 ms at a time.

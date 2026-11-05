@@ -1,15 +1,19 @@
 # 14 — Bybit adapter
 
 ## Goal
+
 Implement the Bybit derivatives CSV adapter exactly as documented in `docs/import-formats/bybit.md`, validated against the real anonymized fixture.
 
 ## Depends on
+
 11 (Bybit = supported), 12. Skip if unsupported (same rule as step 13).
 
 ## Read first
+
 `docs/import-formats/bybit.md`, `docs/import-spec.md` §3–§5, `docs/financial-semantics.md` §3–§4 and Q-01.
 
 ## Scope
+
 1. `src/domain/import/adapters/bybit.ts`, the same structure as step 13.
 2. If the chosen export is **closed P&L** (`kind: 'closed-positions'`):
    - Map entry/exit average, closed qty, closed PnL (→ `pnlSource='exchange'`, `reportedGrossPnl` = PnL **before** fees if the export separates fees, otherwise follow the doc's semantics precisely; if the doc can't establish whether PnL is net or gross, mark the adapter unsupported and record it),
@@ -20,13 +24,17 @@ Implement the Bybit derivatives CSV adapter exactly as documented in `docs/impor
 4. Register the adapter.
 
 ## Out of scope
+
 Spot, options, USDC options, unified-account transaction logs.
 
 ## Tests
+
 The same categories as step 13: real fixture totals exact, synthetic edge cases from the verified header, detection.
 
 ## Acceptance criteria / Gates
+
 Same as step 13. Gate A.
 
 ## Review checklist
+
 - [ ] Net-vs-gross semantics of the PnL column are justified with evidence in the format doc.

@@ -1,15 +1,19 @@
 # 25 — Quality hardening: accessibility, performance, errors and states
 
 ## Goal
+
 Systematically audit and fix accessibility, performance budgets, error handling and screen states across the finished app.
 
 ## Depends on
+
 10, 17, 21, 23, 24 (all user-facing features).
 
 ## Read first
+
 `docs/design-system.md` §5–§6, `docs/testing-strategy.md` (Performance budgets), `docs/architecture.md` §7.
 
 ## Scope
+
 1. **States audit**: create `docs/qa/states-matrix.md`, a table of every screen × {loading, empty, error, insufficient data, demo, hidden amounts, locked}, with ✔/✘ and evidence. Fix every ✘.
 2. **Error handling**:
    - A root `ErrorBoundary` (architecture §7) with Restart (`expo-updates` isn't used, so use `DevSettings.reload` in dev and, in production, a state reset that remounts the root) and "Copy error details" (`expo-clipboard`).
@@ -25,13 +29,17 @@ Systematically audit and fix accessibility, performance budgets, error handling 
 6. **Copy review**: grep the UI strings for banned claims (`AI`, `predict`, `guarantee`, `best`, `only app`, `first`) and fix any hits.
 
 ## Out of scope
+
 New features; redesigns beyond fixing audit findings.
 
 ## Tests
+
 Add regression tests for each fixed bug; an ErrorBoundary component test; the recovery-screen component test.
 
 ## Acceptance criteria
+
 All states-matrix cells ✔; no open a11y blockers/majors; every budget met or documented with a justified exception approved in the progress log; `npm run check` green.
 
 ## Gates
+
 A, D.

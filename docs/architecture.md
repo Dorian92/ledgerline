@@ -9,34 +9,34 @@ when a purchase is attempted or restored (step 27).
 
 ## 1. Platform and toolchain
 
-| Concern | Decision | Notes |
-|---|---|---|
-| Framework | Expo, **latest stable SDK at step 01** (record exact version in `docs/decisions.md`) | New Architecture on (Expo default). |
-| Language | TypeScript `strict: true`, `noUncheckedIndexedAccess: true` | No `any` in `src/domain`, `src/data`. |
-| Target | **Android only** (emulator API 34+ x86_64; minSdk = Expo default) | No Xcode/iOS work. iOS is `docs/future-scope.md`. |
-| Build | **Development build** via `npx expo run:android` (local Gradle). Not Expo Go. | Required by the widget, billing, SQLite native config. No EAS dependency (EAS free tier optional later). |
-| Native project | **CNG / prebuild**: `android/` is generated and **gitignored**; all native config via `app.config.ts` + config plugins. | Keeps upgrades sane. If a custom Kotlin module is needed it lives in `modules/` (Expo Modules API). |
-| Package manager | npm (lockfile committed) | |
-| Navigation | `expo-router` (file-based, typed routes) | Tabs + modal routes + deep links. |
-| Storage | `expo-sqlite` (async API) behind a `Db` interface | Tests use `better-sqlite3` behind the same interface. |
-| Decimal math | `decimal.js` wrapped in `src/domain/money` | **No JS floats for money/qty/price in domain or import code.** |
-| Async data | `@tanstack/react-query` | Query keys per account and mode. Mutations invalidate. |
-| UI/session state | `zustand` (small stores: mode, active account, privacy prefs mirror) | |
-| Forms | `react-hook-form` + `zod` | |
-| Lists | `@shopify/flash-list` | History and import preview. |
-| Charts | `react-native-svg` + our own pure path builders | No charting library; path math is unit-tested. |
-| CSV | `papaparse` | Parse from a string read with `expo-file-system`. |
-| Hashing | `@noble/hashes` (sha256) | Pure JS, the same in Jest and on device. |
-| IDs | `expo-crypto` `randomUUID()` in the app, `node:crypto` in tests, through an injected `IdGenerator` | |
-| Dates/TZ | `date-fns` v4 + `@date-fns/tz` | Hermes `Intl` time-zone support is verified in step 03. |
-| Files | `expo-document-picker`, `expo-file-system`, `expo-sharing` | Import, backup, export. |
-| Fonts | `@expo-google-fonts/inter`, `@expo-google-fonts/jetbrains-mono` | |
-| Widget | `react-native-android-widget` (config plugin + headless task) | Fallback: our own Kotlin widget in `modules/` (step 23). |
-| Notifications | `expo-notifications` local scheduling only | No push token, no FCM. |
-| Privacy | `expo-local-authentication` (app lock), `expo-screen-capture` (block screenshots) | |
-| Billing | `react-native-iap` or `expo-iap`, chosen in step 27 | Behind an `EntitlementProvider` interface. |
-| Tests | Jest (`jest-expo` preset), `@testing-library/react-native`, `fast-check`, `better-sqlite3`; Maestro for device E2E | See `docs/testing-strategy.md`. |
-| Lint/format | ESLint (`eslint-config-expo` flat config) + Prettier | Plus the import-boundary rules below. |
+| Concern          | Decision                                                                                                                | Notes                                                                                                    |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Framework        | Expo, **latest stable SDK at step 01** (record exact version in `docs/decisions.md`)                                    | New Architecture on (Expo default).                                                                      |
+| Language         | TypeScript `strict: true`, `noUncheckedIndexedAccess: true`                                                             | No `any` in `src/domain`, `src/data`.                                                                    |
+| Target           | **Android only** (emulator API 34+ x86_64; minSdk = Expo default)                                                       | No Xcode/iOS work. iOS is `docs/future-scope.md`.                                                        |
+| Build            | **Development build** via `npx expo run:android` (local Gradle). Not Expo Go.                                           | Required by the widget, billing, SQLite native config. No EAS dependency (EAS free tier optional later). |
+| Native project   | **CNG / prebuild**: `android/` is generated and **gitignored**; all native config via `app.config.ts` + config plugins. | Keeps upgrades sane. If a custom Kotlin module is needed it lives in `modules/` (Expo Modules API).      |
+| Package manager  | npm (lockfile committed)                                                                                                |                                                                                                          |
+| Navigation       | `expo-router` (file-based, typed routes)                                                                                | Tabs + modal routes + deep links.                                                                        |
+| Storage          | `expo-sqlite` (async API) behind a `Db` interface                                                                       | Tests use `better-sqlite3` behind the same interface.                                                    |
+| Decimal math     | `decimal.js` wrapped in `src/domain/money`                                                                              | **No JS floats for money/qty/price in domain or import code.**                                           |
+| Async data       | `@tanstack/react-query`                                                                                                 | Query keys per account and mode. Mutations invalidate.                                                   |
+| UI/session state | `zustand` (small stores: mode, active account, privacy prefs mirror)                                                    |                                                                                                          |
+| Forms            | `react-hook-form` + `zod`                                                                                               |                                                                                                          |
+| Lists            | `@shopify/flash-list`                                                                                                   | History and import preview.                                                                              |
+| Charts           | `react-native-svg` + our own pure path builders                                                                         | No charting library; path math is unit-tested.                                                           |
+| CSV              | `papaparse`                                                                                                             | Parse from a string read with `expo-file-system`.                                                        |
+| Hashing          | `@noble/hashes` (sha256)                                                                                                | Pure JS, the same in Jest and on device.                                                                 |
+| IDs              | `expo-crypto` `randomUUID()` in the app, `node:crypto` in tests, through an injected `IdGenerator`                      |                                                                                                          |
+| Dates/TZ         | `date-fns` v4 + `@date-fns/tz`                                                                                          | Hermes `Intl` time-zone support is verified in step 03.                                                  |
+| Files            | `expo-document-picker`, `expo-file-system`, `expo-sharing`                                                              | Import, backup, export.                                                                                  |
+| Fonts            | `@expo-google-fonts/inter`, `@expo-google-fonts/jetbrains-mono`                                                         |                                                                                                          |
+| Widget           | `react-native-android-widget` (config plugin + headless task)                                                           | Fallback: our own Kotlin widget in `modules/` (step 23).                                                 |
+| Notifications    | `expo-notifications` local scheduling only                                                                              | No push token, no FCM.                                                                                   |
+| Privacy          | `expo-local-authentication` (app lock), `expo-screen-capture` (block screenshots)                                       |                                                                                                          |
+| Billing          | `react-native-iap` or `expo-iap`, chosen in step 27                                                                     | Behind an `EntitlementProvider` interface.                                                               |
+| Tests            | Jest (`jest-expo` preset), `@testing-library/react-native`, `fast-check`, `better-sqlite3`; Maestro for device E2E      | See `docs/testing-strategy.md`.                                                                          |
+| Lint/format      | ESLint (`eslint-config-expo` flat config) + Prettier                                                                    | Plus the import-boundary rules below.                                                                    |
 
 ## 2. Source layout
 
@@ -77,6 +77,7 @@ docs/                        this documentation
 ```
 
 **Boundary rules** (ESLint `no-restricted-imports`, added in step 01 and tightened as folders appear):
+
 - `src/domain/**` must not import `react`, `react-native`, `expo*`, `@tanstack/*`, `zustand`, `src/data`, `src/ui`, `src/features`, `src/platform`.
 - `src/domain/**` and `src/data/**` must not use `parseFloat`, `Number(` or unary `+` on money strings. Use `src/domain/money`. Enforced with `no-restricted-globals` / `no-restricted-syntax` for `parseFloat`. `Number(` is covered by review.
 - `src/features/**` must not import `src/data/db` directly. Go through repositories or query hooks.
@@ -104,10 +105,10 @@ UI (features/*) ──hooks──▶ data/queries (react-query) ──▶ reposi
 
 There are two physically separate SQLite files:
 
-| Mode | File | Contents |
-|---|---|---|
-| Real | `ledgerline.db` | User data plus the `app_prefs` table (the global prefs live here, including `mode`) |
-| Demo | `ledgerline-demo.db` | Seeded synthetic data. Reset by deleting and re-seeding. |
+| Mode | File                 | Contents                                                                            |
+| ---- | -------------------- | ----------------------------------------------------------------------------------- |
+| Real | `ledgerline.db`      | User data plus the `app_prefs` table (the global prefs live here, including `mode`) |
+| Demo | `ledgerline-demo.db` | Seeded synthetic data. Reset by deleting and re-seeding.                            |
 
 - The active mode lives in `app_prefs.mode` (`'demo' | 'real' | 'unset'`) in the real DB, so the real DB
   file is always opened first (it's tiny when empty).
@@ -131,6 +132,7 @@ There are two physically separate SQLite files:
 ## 6. Monetization architecture (summary; details in `docs/monetization.md`)
 
 `src/platform/billing` exposes `EntitlementProvider { getStatus(); purchase(); restore(); }` with:
+
 - `UnavailableProvider`: the default in any build where billing is not configured. Pro stays locked and
   the paywall says "Purchases aren't available in this build".
 - `MockProvider`: only when `__DEV__ === true && EXPO_PUBLIC_BILLING_MODE === 'mock'`. The paywall shows a

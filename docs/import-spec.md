@@ -19,6 +19,7 @@ CSV import is the **primary** way to get real data into Ledgerline. Manual entry
 ## 2. v1 scope
 
 In scope:
+
 - Binance, Bybit and OKX **USDT-/USDC-margined perpetual futures** history exports (one export type per
   exchange, chosen in step 11), and **spot** only if it falls out of the same export for free.
 - One account per import. The user chooses the target account, or creates one, before preview. The account
@@ -49,19 +50,46 @@ Then commit (in `src/data/repositories/imports.ts`, step 16) applies an `ImportP
 
 ```ts
 interface ImportAdapter {
-  formatId: string;                     // 'binance.futures.trade-history.v1'
+  formatId: string; // 'binance.futures.trade-history.v1'
   exchange: 'binance' | 'bybit' | 'okx';
   kind: 'fills' | 'closed-positions';
-  label: string;                        // 'Binance Futures — Trade History'
-  headerSignature: { required: string[]; optional?: string[] };   // exact header names after trim/BOM strip
+  label: string; // 'Binance Futures — Trade History'
+  headerSignature: { required: string[]; optional?: string[] }; // exact header names after trim/BOM strip
   timestampPolicy: { kind: 'fixed'; tz: 'UTC' } | { kind: 'ask'; defaultTz: 'UTC' };
-  normalize(row: Record<string,string>, ctx: NormalizeCtx): NormalizedRow;  // never throws; returns error rows
+  normalize(row: Record<string, string>, ctx: NormalizeCtx): NormalizedRow; // never throws; returns error rows
 }
 type NormalizedRow =
-  | { kind: 'fill'; sourceIndex: number; symbol: SymbolInfo; side: 'buy'|'sell'; positionSide: 'long'|'short'|'both';
-      price: Dec; quantity: Dec; fee: Dec; feeAsset: string; realizedPnl?: Dec; executedAt: number; exchangeTradeId?: string; raw: string[] }
-  | { kind: 'closed'; sourceIndex: number; symbol: SymbolInfo; direction: 'long'|'short'; entry: Dec; exit: Dec; quantity: Dec;
-      grossPnl?: Dec; fees?: Dec; funding?: Dec; openedAt: number; closedAt: number; exchangeId?: string; raw: string[] }
+  | {
+      kind: 'fill';
+      sourceIndex: number;
+      symbol: SymbolInfo;
+      side: 'buy' | 'sell';
+      positionSide: 'long' | 'short' | 'both';
+      price: Dec;
+      quantity: Dec;
+      fee: Dec;
+      feeAsset: string;
+      realizedPnl?: Dec;
+      executedAt: number;
+      exchangeTradeId?: string;
+      raw: string[];
+    }
+  | {
+      kind: 'closed';
+      sourceIndex: number;
+      symbol: SymbolInfo;
+      direction: 'long' | 'short';
+      entry: Dec;
+      exit: Dec;
+      quantity: Dec;
+      grossPnl?: Dec;
+      fees?: Dec;
+      funding?: Dec;
+      openedAt: number;
+      closedAt: number;
+      exchangeId?: string;
+      raw: string[];
+    }
   | { kind: 'error'; sourceIndex: number; code: RowErrorCode; message: string; raw: string[] };
 ```
 
@@ -69,12 +97,12 @@ type NormalizedRow =
 
 Each data row ends in exactly one status:
 
-| Status | Meaning | Imported? |
-|---|---|---|
-| `valid` | Clean | yes |
-| `warning` | Importable with a caveat: `fee_non_quote_asset`, `pnl_mismatch`, `funding_unknown`, `still_open` (not imported; see below) | yes, except `still_open` |
-| `duplicate` | Same fingerprint already in the DB, or earlier in the same file | no |
-| `error` | Not importable: `missing_field`, `bad_number`, `bad_timestamp`, `quote_mismatch`, `unsupported_instrument`, `opened_before_export`, `residual_quantity`, `inconsistent_hedge_fill` | no |
+| Status      | Meaning                                                                                                                                                                            | Imported?                |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `valid`     | Clean                                                                                                                                                                              | yes                      |
+| `warning`   | Importable with a caveat: `fee_non_quote_asset`, `pnl_mismatch`, `funding_unknown`, `still_open` (not imported; see below)                                                         | yes, except `still_open` |
+| `duplicate` | Same fingerprint already in the DB, or earlier in the same file                                                                                                                    | no                       |
+| `error`     | Not importable: `missing_field`, `bad_number`, `bad_timestamp`, `quote_mismatch`, `unsupported_instrument`, `opened_before_export`, `residual_quantity`, `inconsistent_hedge_fill` | no                       |
 
 The **summary invariant** (tested): `total = valid + warning + duplicate + error`. The import button reads
 "Import **M** trades from **N** rows", where `N = valid + importable warnings` and `M` = the number of trades built.
@@ -83,7 +111,7 @@ is internally inconsistent; our UI must always satisfy the invariant.
 
 **Fingerprint** = `sha256( formatId + '\u001f' + (exchangeTradeId ?? canonicalRow) )`, where
 `canonicalRow` = the raw cells of the adapter's identity columns (declared per adapter) after trimming, joined by `\u001f`.
-Raw timestamp strings are used, *not* parsed instants, so re-importing with a different time-zone choice
+Raw timestamp strings are used, _not_ parsed instants, so re-importing with a different time-zone choice
 still dedupes. Fingerprints are stored per account, and only for rows that were actually imported.
 
 **Idempotency** (tested): importing the same file twice yields 0 new trades the second time.
@@ -126,11 +154,11 @@ the first file are imported once they're closed in the second.
 
 ## 7. Per-exchange status (update in step 11)
 
-| Exchange | Candidate export | Kind | Evidence | Status |
-|---|---|---|---|---|
-| Binance | USDⓈ-M Futures → Trade History export (has a realized-profit column per fill, per public UI) | fills | none yet | **unverified** |
-| Bybit | Derivatives → Closed P&L export (or Trade History) | closed-positions? | none yet | **unverified** |
-| OKX | Trading history / Position history export | closed-positions? fills? | none yet | **unverified** |
+| Exchange | Candidate export                                                                             | Kind                     | Evidence | Status         |
+| -------- | -------------------------------------------------------------------------------------------- | ------------------------ | -------- | -------------- |
+| Binance  | USDⓈ-M Futures → Trade History export (has a realized-profit column per fill, per public UI) | fills                    | none yet | **unverified** |
+| Bybit    | Derivatives → Closed P&L export (or Trade History)                                           | closed-positions?        | none yet | **unverified** |
+| OKX      | Trading history / Position history export                                                    | closed-positions? fills? | none yet | **unverified** |
 
 The candidates above come from general knowledge of the exchange UIs and **haven't been verified**.
 Step 11 replaces this table with evidence-backed entries.

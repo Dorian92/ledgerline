@@ -1,16 +1,20 @@
 # 12 — Import core pipeline
 
 ## Goal
+
 Build the exchange-agnostic pure pipeline from bytes to an `ImportPlan`: decode, parse, detect, normalize via adapters, validate,
 fingerprint, dedupe and build trades, with honest counts, chunked so the UI stays responsive.
 
 ## Depends on
+
 04 (03). It doesn't need step 11: test with a **test-only adapter** over synthetic data (`formatId: 'test.fills.v1'`).
 
 ## Read first
+
 `docs/import-spec.md` §3–§5 (normative), `docs/financial-semantics.md` §4.
 
 ## Scope
+
 1. `npm i papaparse @noble/hashes` and `npm i -D @types/papaparse`.
 2. `src/domain/import/decode.ts`: `decodeCsvBytes(bytes: Uint8Array): { text: string; encoding: 'utf-8'|'utf-8-bom'|'utf-16le' } | { error: 'unsupported_encoding' }` (BOM sniffing, `TextDecoder` with a fallback check for Hermes support; if `TextDecoder` is missing on Hermes, read the file as UTF-8 text via expo-file-system in the platform layer and pass the text in instead, and support both entry points).
 3. `parse.ts`: `parseCsv(text): { header: string[]; rows: string[][]; delimiter }`, using papaparse `header:false, skipEmptyLines:'greedy'`. Header cells are trimmed and BOM-stripped.
@@ -19,11 +23,27 @@ fingerprint, dedupe and build trades, with honest counts, chunked so the UI stay
 5. `types.ts`: the `ImportAdapter`, `NormalizedRow`, `RowStatus`, `RowErrorCode`, `RowWarningCode` and `ImportPlan` types:
    ```ts
    interface ImportPlan {
-     formatId: string; exchange: string; label: string; sourceTz: string; fileSha256: string;
-     summary: { total: number; valid: number; warning: number; duplicate: number; error: number; importableRows: number; tradesToCreate: number };
-     rows: Array<{ index: number; status: RowStatus; codes: string[]; display: PreviewCells }>;   // PreviewCells: time, symbol, side, qty, price (strings)
-     trades: Array<{ input: Omit<TradeInput,'accountId'|'tagIds'|'notes'|'emotion'>; fills: FillInput[]; fingerprints: string[] }>;
-     messages: Array<{ level: 'warning'|'error'; text: string; rowIndexes: number[] }>;   // grouped, human-readable
+     formatId: string;
+     exchange: string;
+     label: string;
+     sourceTz: string;
+     fileSha256: string;
+     summary: {
+       total: number;
+       valid: number;
+       warning: number;
+       duplicate: number;
+       error: number;
+       importableRows: number;
+       tradesToCreate: number;
+     };
+     rows: Array<{ index: number; status: RowStatus; codes: string[]; display: PreviewCells }>; // PreviewCells: time, symbol, side, qty, price (strings)
+     trades: Array<{
+       input: Omit<TradeInput, 'accountId' | 'tagIds' | 'notes' | 'emotion'>;
+       fills: FillInput[];
+       fingerprints: string[];
+     }>;
+     messages: Array<{ level: 'warning' | 'error'; text: string; rowIndexes: number[] }>; // grouped, human-readable
    }
    ```
 6. `fingerprint.ts`: per import-spec §4, `sha256` hex from `@noble/hashes/sha256` + `utils.bytesToHex`.
@@ -40,9 +60,11 @@ fingerprint, dedupe and build trades, with honest counts, chunked so the UI stay
 9. Synthetic fixtures for the test adapter in `src/domain/import/__tests__/fixtures/SYNTHETIC_test_*.csv` covering import-spec §6 edge cases, plus a generated 50k file at test time.
 
 ## Out of scope
+
 Real exchange adapters (13–15), DB commit (16), UI (17).
 
 ## Tests
+
 - Decode: BOM, UTF-16LE sample, invalid bytes.
 - Parse: `;` delimiter, quoted commas, CRLF, trailing empty lines, header-only file → 0 rows.
 - Detect: exact, missing column → `closest` reported, ambiguous.
@@ -54,12 +76,15 @@ Real exchange adapters (13–15), DB commit (16), UI (17).
 - Performance: 50k rows plan < 8 s in Node (loose), with progress called ≥ 100 times.
 
 ## Acceptance criteria
+
 All tests green, coverage ≥ 90% for `src/domain/import`; no adapter-specific logic in core files.
 
 ## Gates
+
 A.
 
 ## Review checklist
+
 - [ ] No floats; numbers via `parseCsvDecimal`.
 - [ ] Error rows never throw; one bad row never aborts the file.
 - [ ] Messages are honest and actionable.

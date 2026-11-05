@@ -1,15 +1,19 @@
 # 03 — Money and decimal domain
 
 ## Goal
+
 Provide the only allowed way to parse, compute, store and format prices, quantities and amounts.
 
 ## Depends on
-01.
+
+1.
 
 ## Read first
+
 `docs/financial-semantics.md` §1 and §8, `docs/data-model.md` (Conventions).
 
 ## Scope
+
 1. `npm i decimal.js date-fns @date-fns/tz` and `npm i -D fast-check`.
 2. `src/domain/money/dec.ts`:
    - A configured clone: `const D = Decimal.clone({ precision: 40, rounding: Decimal.ROUND_HALF_EVEN, toExpNeg: -40, toExpPos: 40 })`.
@@ -34,9 +38,11 @@ Provide the only allowed way to parse, compute, store and format prices, quantit
 9. Enable a Jest `coverageThreshold` for `src/domain/**`: 90% lines/branches/functions.
 
 ## Out of scope
+
 Trade logic, metrics, currency conversion.
 
 ## Tests
+
 - Canonical round-trip property: for random decimal strings, `toCanonical(fromCanonical(s)) === s` for canonical s; `toCanonical(dec('1.50')) === '1.5'`; `-0` → `'0'`; `1e-8` → `'0.00000001'`.
 - Arithmetic: `0.1 + 0.2 = 0.3` exactly; division by zero throws.
 - parseUserDecimal: `'68,412.5'` → grouping error; `'0,15'` → `0.15`; `' 12 '` → 12; `'1e5'` → invalid; `''` → empty; `'-3.2'` ok.
@@ -45,16 +51,20 @@ Trade logic, metrics, currency conversion.
 - Hermes check: a dev-only test screen isn't needed. Instead, add `src/platform/__devchecks__/intlTz.ts`, run once at dev startup (`__DEV__`), which logs a warning if `new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin' })` throws. Note in the progress log whether it passed on the emulator.
 
 ## Acceptance criteria
+
 - All tests green, coverage ≥ 90% for `src/domain/money` and `src/domain/time`.
 - No use of JS `number` for amounts anywhere in these modules except `decFromInt`.
 
 ## Gates
+
 A. (D optional: record the Hermes Intl tz result if an emulator is available.)
 
 ## Review checklist
+
 - [ ] `formatMoney` never calls `toNumber()`.
 - [ ] Rounding mode is half-even everywhere and documented in code comments only where non-obvious.
 
 ## Risks / notes
+
 If Hermes lacks `Intl` timeZone support on the target, `@date-fns/tz` fails. In that case, record a decision to add the
 `@formatjs/intl-datetimeformat` polyfill with the tz data needed (the bundle-size cost is acceptable).

@@ -1,16 +1,20 @@
 # 01 — Scaffold
 
 ## Goal
+
 Create the Expo + TypeScript project with expo-router, strict lint/format/test tooling and the import
 boundary rules, and prove that a development build runs on the Android emulator.
 
 ## Depends on / user actions
+
 None. U-02 is needed for the device gate. U-03 (app id) is ideally decided now. If it isn't, use the placeholder `app.ledgerline`.
 
 ## Read first
+
 `docs/architecture.md` §1–§2, `docs/testing-strategy.md` (Gates), `docs/workflow.md`.
 
 ## Scope
+
 1. Scaffold with `npx create-expo-app@latest` (default TypeScript template with expo-router) into
    `/workspace/tmp-scaffold`, then move the contents to the repo root, keeping `docs/`. Remove the template's
    example screens and components (tabs demo, `components/`, `constants/`, `hooks/`, reset script).
@@ -42,27 +46,33 @@ None. U-02 is needed for the device gate. U-03 (app id) is ideally decided now. 
 13. Append the step 01 entry to `docs/progress-log.md`.
 
 ## Out of scope
+
 UI design, fonts, navigation tabs, any domain code, CI config (no CI provider decision yet), EAS config.
 
 ## Tests
+
 - `sanity.test.ts`, `app/__tests__/index.test.tsx` (renders the text "Ledgerline").
 - Lint self-test: add a temporary file `src/domain/__lint_probe__.ts` importing `react-native`, confirm `npm run lint` fails, then delete it. Note the result in the progress log.
 
 ## Acceptance criteria
+
 - `npm run check` exits 0 on a clean clone after `npm ci`.
 - `npx expo prebuild --platform android --clean && npm run android` builds and launches on an emulator; the screen shows "Ledgerline" on a dark background.
 - `android/` is not tracked by git.
 - The generated `android/app/src/main/AndroidManifest.xml` has `android:allowBackup="false"`.
 
 ## Gates
+
 A: `npm run check`. D: `npm run android` (with the emulator running).
 
 ## Review checklist
+
 - [ ] No leftover template demo code or assets.
 - [ ] Port 8137 is used consistently.
 - [ ] Versions recorded (D-018). The lockfile is committed.
 
 ## Risks / notes
+
 - A cloud agent VM may lack the Android SDK/emulator (`/dev/kvm` may exist but isn't guaranteed to be usable).
   Installing the cmdline tools, an emulator image and a headless emulator (`-no-window -gpu swiftshader_indirect`) is allowed if it works within the VM.
   Otherwise mark D as pending for Dorian (U-02).

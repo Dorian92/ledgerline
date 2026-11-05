@@ -1,0 +1,8 @@
+android
+ios
+coverage
+e2e/screenshots
+node_modules
+.expo
+dist
+build

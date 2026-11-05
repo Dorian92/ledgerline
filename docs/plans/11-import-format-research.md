@@ -1,18 +1,22 @@
 # 11 — Import format research and evidence
 
 ## Goal
+
 Establish **evidence-backed** CSV format specifications for Binance, Bybit and OKX futures history, plus anonymized real fixtures,
 before writing any adapter. Exchanges without evidence are explicitly marked unsupported in v1.
 
 ## Depends on / user actions
+
 01 (TS tooling for the script). **U-04** (Dorian exports his own CSVs) and **U-05** (he reviews the anonymized output).
 Without U-04, do steps 1–3 and 6 (script, templates, docs from official sources), and leave real-evidence rows "pending".
 Steps 13–15 stay blocked for any exchange without evidence.
 
 ## Read first
+
 `docs/import-spec.md` (all), `docs/financial-semantics.md` §4.
 
 ## Scope
+
 1. `scripts/anonymize-csv.ts` (run with `npx tsx`; add `tsx` as a dev dependency):
    `npx tsx scripts/anonymize-csv.ts --in fixtures/csv/raw/x.csv --out fixtures/csv/real-anonymized/binance/<formatId>__1.csv --exchange binance --id-cols "Order No,Trade ID" --uid-cols "UID" --time-shift-days 0 --qty-scale 1`
    - Reads bytes, keeps the BOM, delimiter, quoting, line endings and header byte-exact.
@@ -38,25 +42,31 @@ Steps 13–15 stay blocked for any exchange without evidence.
    for the edge cases listed in import-spec §6. If an exchange is unverified, no synthetic file for it is generated (otherwise the synthetic file would be mistaken for its format).
 
 ## Out of scope
+
 Adapter code (13–15), the generic pipeline (12), XLSX handling, API docs research for sync.
 
 ## Tests
+
 Anonymizer: ID mapping stable; header unchanged byte-for-byte; quantity scaling keeps decimal places; the privacy guard trips on an email.
 
 ## Acceptance criteria
+
 - For each of Binance, Bybit and OKX: `docs/import-formats/<exchange>.md` exists with a **decision**. "Supported" requires a real anonymized fixture + meta (or an official sample file). "Unsupported in v1" carries a reason.
 - No raw exports in git (`git log --stat` reviewed).
 - import-spec §7 updated.
 
 ## Gates
+
 A.
 
 ## Review checklist
+
 - [ ] Every column claim in a format doc is traceable to a fixture or an official sample file.
 - [ ] Fixture metadata explains where `expected` values came from.
 - [ ] Dorian confirmed (U-05) in the progress log.
 
 ## Risks / notes
+
 - Exchanges may only offer XLSX, or email the export asynchronously, or limit date ranges (e.g. 3–6 months per export). Document these limits, because they affect the "opened before export" UX.
 - Binance fees in BNB are common, so expect `fees_complete=0` cases.
 - OKX swap sizes in contracts are the main precision risk (import-spec §5).

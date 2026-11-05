@@ -4,8 +4,8 @@
 
 Direct competitors already exist: **FuturesEdge, TradingLog, UltraTrader, Daily Edge** (and many generic
 trading journals, including web/desktop tools). We have **not** validated a market gap, demand, or revenue.
-Ledgerline's angle is a hypothesis: *fully offline, no account, crypto-futures-first CSV import, and
-tilt/behavior insights with transparent rules*. Store copy and docs must not claim "first", "only",
+Ledgerline's angle is a hypothesis: _fully offline, no account, crypto-futures-first CSV import, and
+tilt/behavior insights with transparent rules_. Store copy and docs must not claim "first", "only",
 "proven", "AI", or performance outcomes.
 
 ## Model
@@ -21,11 +21,11 @@ tilt/behavior insights with transparent rules*. Store copy and docs must not cla
 
 ## Entitlement providers (see architecture §6)
 
-| Provider | When | Behavior |
-|---|---|---|
-| `UnavailableProvider` | Default; any build without billing configured | Pro locked; paywall explains that purchases are unavailable in this build; **no unlock path** |
-| `MockProvider` | `__DEV__ && EXPO_PUBLIC_BILLING_MODE==='mock'` only | Paywall banner "MOCK PURCHASE — development only"; toggles a dev-only flag; never compiled into release behavior |
-| `PlayBillingProvider` | Release builds with the product configured (step 27) | Google Play Billing one-time product `ledgerline_pro` |
+| Provider              | When                                                 | Behavior                                                                                                         |
+| --------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `UnavailableProvider` | Default; any build without billing configured        | Pro locked; paywall explains that purchases are unavailable in this build; **no unlock path**                    |
+| `MockProvider`        | `__DEV__ && EXPO_PUBLIC_BILLING_MODE==='mock'` only  | Paywall banner "MOCK PURCHASE — development only"; toggles a dev-only flag; never compiled into release behavior |
+| `PlayBillingProvider` | Release builds with the product configured (step 27) | Google Play Billing one-time product `ledgerline_pro`                                                            |
 
 Demo mode shows Pro features unlocked **on demo data only**. That's not an entitlement and it never applies to real data.
 

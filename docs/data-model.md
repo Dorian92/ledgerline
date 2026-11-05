@@ -1,7 +1,7 @@
 # Ledgerline — Data model (SQLite schema v1)
 
 Applies to both `ledgerline.db` (real) and `ledgerline-demo.db` (demo). The `app_prefs` table is only
-*used* in the real DB but is created in both, to keep a single migration set.
+_used_ in the real DB but is created in both, to keep a single migration set.
 
 ## Conventions
 
@@ -148,28 +148,54 @@ CREATE TABLE import_fingerprints (
 ## Domain types (TypeScript, `src/domain/trade/types.ts`)
 
 ```ts
-type Decimal = import('../money').Dec;          // wrapper, never a JS number
+type Decimal = import('../money').Dec; // wrapper, never a JS number
 type Direction = 'long' | 'short';
 type Emotion = 'calm' | 'fomo' | 'revenge' | 'fear';
 type QuoteCurrency = 'USDT' | 'USDC' | 'USD';
 
-interface TradeInput {            // what the form / importer provides
-  accountId: string; symbol: string; baseAsset: string; quoteAsset: QuoteCurrency;
-  instrument: 'perp' | 'spot'; direction: Direction;
-  openedAt: number; closedAt: number | null;
-  entryPrice: Decimal; exitPrice: Decimal | null; quantity: Decimal; maxQuantity?: Decimal;
-  stopPrice: Decimal | null; leverage: Decimal | null;
-  fees: Decimal; feesComplete: boolean; funding: Decimal; fundingStatus: 'included'|'none'|'unknown';
-  pnlSource: 'computed' | 'exchange'; reportedGrossPnl?: Decimal;   // only when pnlSource='exchange'
-  emotion: Emotion | null; tagIds: string[]; notes: string;
+interface TradeInput {
+  // what the form / importer provides
+  accountId: string;
+  symbol: string;
+  baseAsset: string;
+  quoteAsset: QuoteCurrency;
+  instrument: 'perp' | 'spot';
+  direction: Direction;
+  openedAt: number;
+  closedAt: number | null;
+  entryPrice: Decimal;
+  exitPrice: Decimal | null;
+  quantity: Decimal;
+  maxQuantity?: Decimal;
+  stopPrice: Decimal | null;
+  leverage: Decimal | null;
+  fees: Decimal;
+  feesComplete: boolean;
+  funding: Decimal;
+  fundingStatus: 'included' | 'none' | 'unknown';
+  pnlSource: 'computed' | 'exchange';
+  reportedGrossPnl?: Decimal; // only when pnlSource='exchange'
+  emotion: Emotion | null;
+  tagIds: string[];
+  notes: string;
 }
-interface TradeDerived {          // output of computeTrade(), cached in DB
-  grossPnl: Decimal | null; netPnl: Decimal | null;
-  riskAmount: Decimal | null; rMultiple: Decimal | null;
+interface TradeDerived {
+  // output of computeTrade(), cached in DB
+  grossPnl: Decimal | null;
+  netPnl: Decimal | null;
+  riskAmount: Decimal | null;
+  rMultiple: Decimal | null;
   rUnavailableReason: 'no_stop' | 'stop_wrong_side' | 'zero_risk' | 'open' | null;
   calcVersion: number;
 }
-interface TradeRow extends TradeInput, TradeDerived { id: string; status: 'open'|'closed'; source: 'manual'|'import'|'demo'; importBatchId: string|null; createdAt: number; updatedAt: number; }
+interface TradeRow extends TradeInput, TradeDerived {
+  id: string;
+  status: 'open' | 'closed';
+  source: 'manual' | 'import' | 'demo';
+  importBatchId: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
 ```
 
 ## Backup file format (`ledgerline-backup-YYYYMMDD-HHmm.json`)
@@ -182,8 +208,13 @@ interface TradeRow extends TradeInput, TradeDerived { id: string; status: 'open'
   "appVersion": "1.0.0",
   "exportedAt": 1793000000000,
   "data": {
-    "accounts": [], "trades": [], "fills": [], "tags": [], "tradeTags": [],
-    "importBatches": [], "importFingerprints": [],
+    "accounts": [],
+    "trades": [],
+    "fills": [],
+    "tags": [],
+    "tradeTags": [],
+    "importBatches": [],
+    "importFingerprints": [],
     "prefs": { "display_tz": "device", "tilt_thresholds": {} }
   }
 }

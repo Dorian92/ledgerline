@@ -1,16 +1,20 @@
 # 04 — Trade calculations
 
 ## Goal
+
 Implement trade types, input validation, per-trade derived values (gross/net PnL, risk, R), and
 average-cost position reconstruction from fills, exactly as specified.
 
 ## Depends on
-03.
+
+3.
 
 ## Read first
+
 `docs/financial-semantics.md` §2–§4 (normative), `docs/data-model.md` (Domain types).
 
 ## Scope
+
 1. `src/domain/trade/types.ts`: the types from data-model.md (`TradeInput`, `TradeDerived`, `Direction`, `Emotion`, …) plus `SymbolInfo { display, base, quote, instrument }`.
 2. `src/domain/trade/symbol.ts`: `parseSymbol(raw: string, instrument: 'perp'|'spot'): SymbolInfo | null` for inputs like
    `BTCUSDT`, `BTC-USDT`, `BTC/USDT`, `BTC-USDT-SWAP`, `BTC-PERP` (manual entry), uppercasing; quote suffix in {USDT, USDC, USD}.
@@ -31,9 +35,11 @@ average-cost position reconstruction from fills, exactly as specified.
 6. `src/domain/trade/index.ts` re-exports.
 
 ## Out of scope
+
 DB, UI, CSV specifics, funding import.
 
 ## Tests (cite § numbers in test names)
+
 - §3.3 worked example: gross 124.125, net 120.025, risk 58.875, R ≈ 2.0386 (`toFixed(4)` = `2.0386`), display `+2.04R`.
 - Short example: entry 3512.8, exit 3541.2, qty 2.4, fees 3.1 → gross −68.16, net −71.26. Stop 3560 → risk 113.28, R −0.6291….
 - R unavailable reasons: no stop; long with stop above entry; short with stop below entry; stop == entry; open trade.
@@ -52,17 +58,21 @@ DB, UI, CSV specifics, funding import.
   9. Exact-zero rule: a residual 1e-18 → still open (no dust tolerance).
 
 ## Acceptance criteria
+
 - 100% of the above cases pass. Domain coverage stays ≥ 90%.
 - No function reads the clock or the time zone.
 
 ## Gates
+
 A.
 
 ## Review checklist
+
 - [ ] Average entry isn't recomputed on reductions.
 - [ ] Prorated fee uses exact decimal division (no rounding).
 - [ ] Unknown cases return errors, not best guesses.
 
 ## Risks / notes
+
 Exchanges may compute realized PnL per fill with rounding. That's why exchange-reported values are a
 consistency check (`pnl_mismatch` warning) and not an assertion in this step.

@@ -1,26 +1,38 @@
 # 22 — Pro entitlement, gating and paywall (no real billing yet)
 
 ## Goal
+
 Introduce the entitlement abstraction with the Unavailable and dev-only Mock providers, the paywall screen, and gating for the Pro features.
 Make it impossible for a release build to grant Pro without real billing.
 
 ## Depends on / user actions
+
 19, 20. U-06 (confirm the feature split; if it's not confirmed, implement the split from `docs/monetization.md` as is).
 
 ## Read first
+
 `docs/monetization.md` (all), `docs/architecture.md` §6.
 
 ## Scope
+
 1. `src/platform/billing/types.ts`:
    ```ts
-   type EntitlementStatus = { pro: boolean; source: 'none'|'mock'|'play'|'cache'; checkedAt: number | null; pending?: boolean };
+   type EntitlementStatus = {
+     pro: boolean;
+     source: 'none' | 'mock' | 'play' | 'cache';
+     checkedAt: number | null;
+     pending?: boolean;
+   };
    interface EntitlementProvider {
      kind: 'unavailable' | 'mock' | 'play';
      init(): Promise<void>;
      getStatus(): Promise<EntitlementStatus>;
-     purchase(): Promise<{ ok: true } | { ok: false; reason: 'unavailable'|'cancelled'|'pending'|'error'; message?: string }>;
+     purchase(): Promise<
+       | { ok: true }
+       | { ok: false; reason: 'unavailable' | 'cancelled' | 'pending' | 'error'; message?: string }
+     >;
      restore(): Promise<EntitlementStatus>;
-     getPriceLabel(): Promise<string | null>;   // localized price from the store, null when unknown
+     getPriceLabel(): Promise<string | null>; // localized price from the store, null when unknown
    }
    ```
 2. `unavailableProvider.ts` (always `pro:false`, purchase → `unavailable`); `mockProvider.ts` (in-memory + `app_prefs.entitlement_cache` with `source:'mock'`; price label "$—.— (mock)").
@@ -40,9 +52,11 @@ Make it impossible for a release build to grant Pro without real billing.
 8. Settings → Ledgerline Pro row: status ("Unlocked · via Google Play" / "Not unlocked" / "Mock (dev)").
 
 ## Out of scope
+
 Google Play Billing (27), promo codes, family sharing, time-limited trials.
 
 ## Tests
+
 - `selectProvider` in combinations of `__DEV__` and env (mock `__DEV__` via jest globals).
 - The release cache-discard rule.
 - `ProGate` renders the fallback vs the children; demo override; the account-creation gate.
@@ -50,12 +64,15 @@ Google Play Billing (27), promo codes, family sharing, time-limited trials.
 - check-release-config pure checker cases.
 
 ## Acceptance criteria
+
 - With a dev build and `EXPO_PUBLIC_BILLING_MODE=mock`, Pro can be toggled with a visible mock banner; without the env var, Pro can't be unlocked in real mode.
 - `npm run check:release` fails when mock mode is configured.
 
 ## Gates
+
 A, D (`e2e/pro.yaml` with mock mode: Insights locked in real mode → paywall → mock unlock → Insights visible), V (paywall, locked Insights).
 
 ## Review checklist
+
 - [ ] There's no code path where `source:'mock'` yields Pro in a release build.
 - [ ] Paywall copy makes no claims beyond the feature list; the price isn't hard-coded.

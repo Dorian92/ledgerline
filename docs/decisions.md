@@ -23,4 +23,4 @@ Changing an accepted decision needs a new entry that supersedes it.
 - **D-015 — en-US number formatting in v1; English only** — accepted — Lets us ship before investing in i18n.
 - **D-016 — Display time zone = device tz by default (setting: UTC)** — accepted.
 - **D-017 — Package/app id** — **pending user decision U-03** — Placeholder `app.ledgerline`. Must be final before the first Play upload (step 28).
-- **D-018 — Expo SDK version** — pending, recorded by step 01.
+- **D-018 — Expo SDK version** — accepted — Expo SDK **58.0.23**, React Native **0.88.1**, React **19.3.0** (step 01, Nov 2026).

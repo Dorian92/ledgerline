@@ -2,6 +2,7 @@
 
 Reference mockups (attached to the planning request; **user action U-01**: commit them to
 `docs/design/mockups/` as `overview.png`, `1-dashboard.png`, `2-import.png`):
+
 - **overview**: Dashboard, Import trades, Quick add (bottom sheet), Trades (history), Insights (PRO), Android home widget.
 - **1-dashboard**: full-height dashboard.
 - **2-import**: full-height import preview.
@@ -12,17 +13,28 @@ The look is dark, premium and restrained fintech. Mockup numbers are **demo data
 
 ```ts
 export const color = {
-  bg: '#0B0E14', card: '#131824', cardRaised: '#171D2B', border: '#1F2833',
-  text: '#E8ECF4', textSecondary: '#9AA3B5', textMuted: '#6B7486',   // verify contrast, §5
-  violet: '#7C5CFF', violetPressed: '#6A4AF0', violetSoft: 'rgba(124,92,255,0.14)',
-  green: '#22C55E', greenSoft: 'rgba(34,197,94,0.14)',
-  red: '#F43F5E', redSoft: 'rgba(244,63,94,0.14)',
-  amber: '#F59E0B', amberSoft: 'rgba(245,158,11,0.14)',        // duplicates/warnings (import mockup)
+  bg: '#0B0E14',
+  card: '#131824',
+  cardRaised: '#171D2B',
+  border: '#1F2833',
+  text: '#E8ECF4',
+  textSecondary: '#9AA3B5',
+  textMuted: '#6B7486', // verify contrast, §5
+  violet: '#7C5CFF',
+  violetPressed: '#6A4AF0',
+  violetSoft: 'rgba(124,92,255,0.14)',
+  green: '#22C55E',
+  greenSoft: 'rgba(34,197,94,0.14)',
+  red: '#F43F5E',
+  redSoft: 'rgba(244,63,94,0.14)',
+  amber: '#F59E0B',
+  amberSoft: 'rgba(245,158,11,0.14)', // duplicates/warnings (import mockup)
   neutralCell: '#1A2130',
 } as const;
 export const radius = { card: 16, control: 12, pill: 999, fab: 20 } as const;
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 } as const;
 ```
+
 `text*`, `amber` and `neutralCell` are derived from the mockups by eye. Step 02 may adjust them, but only to meet contrast requirements.
 
 ## 2. Typography
@@ -35,24 +47,24 @@ export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 } as const;
 
 ## 3. Components (from mockups)
 
-| Component | Spec |
-|---|---|
-| `Card` | bg `card`, 1 px `border`, radius 16, padding 16 |
-| `StatTile` | Card with uppercase caption + mono value (Win rate, Avg R, Max DD) |
-| `Segmented` | pills 7D/30D/YTD/ALL; selected = violet fill, white text; unselected = card bg + border |
-| `Pill` | LONG (greenSoft bg, green text), SHORT (redSoft/red), DEMO DATA (violet outline), PRO (violet fill) |
-| `Money` | mono, sign-colored (green ≥ +0.01, red ≤ −0.01, text for 0), respects hide-amounts |
-| `TradeRow` | symbol (600) + side pill + leverage `2x` muted; second line `HH:mm · Setup`; right: net PnL + R in muted |
-| `Fab` | 64 dp violet square, radius 20, `+` icon, bottom-right above tab bar, elevation |
-| `Banner` (tilt) | Card with red border, ⚠ icon, red title, secondary body |
-| `Chip` | emotion/setup chips: unselected outline; selected violet fill; emoji optional (mockup: 😌 Calm, ⚡ FOMO, 😤 Revenge, 😨 Fear) |
-| `Sheet` | quick add bottom sheet: grabber, title, close ×, violet primary "Save trade" fixed bottom |
-| `ExchangeTile` | import source: square card, brand-colored monogram badge (B/BY/OK), name; selected = violet border. Use **monograms only**, not exchange logos (trademarks). |
-| `PreviewTable` | mono rows: status icon, TIME, SYMBOL, SIDE (green BUY/red SELL), QTY, PRICE; duplicate row amber tint, error row red tint |
-| `Heatmap` | 7-column month grid, rounded cells, green/red opacity steps |
-| `BarChart` | hour-of-day bars green above/red below baseline |
-| `EquityChart` | green line + vertical gradient fill to transparent, dotted gridlines, end dot |
-| `TabBar` | 4 tabs, active violet label + dot indicator |
+| Component       | Spec                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Card`          | bg `card`, 1 px `border`, radius 16, padding 16                                                                                                              |
+| `StatTile`      | Card with uppercase caption + mono value (Win rate, Avg R, Max DD)                                                                                           |
+| `Segmented`     | pills 7D/30D/YTD/ALL; selected = violet fill, white text; unselected = card bg + border                                                                      |
+| `Pill`          | LONG (greenSoft bg, green text), SHORT (redSoft/red), DEMO DATA (violet outline), PRO (violet fill)                                                          |
+| `Money`         | mono, sign-colored (green ≥ +0.01, red ≤ −0.01, text for 0), respects hide-amounts                                                                           |
+| `TradeRow`      | symbol (600) + side pill + leverage `2x` muted; second line `HH:mm · Setup`; right: net PnL + R in muted                                                     |
+| `Fab`           | 64 dp violet square, radius 20, `+` icon, bottom-right above tab bar, elevation                                                                              |
+| `Banner` (tilt) | Card with red border, ⚠ icon, red title, secondary body                                                                                                      |
+| `Chip`          | emotion/setup chips: unselected outline; selected violet fill; emoji optional (mockup: 😌 Calm, ⚡ FOMO, 😤 Revenge, 😨 Fear)                                |
+| `Sheet`         | quick add bottom sheet: grabber, title, close ×, violet primary "Save trade" fixed bottom                                                                    |
+| `ExchangeTile`  | import source: square card, brand-colored monogram badge (B/BY/OK), name; selected = violet border. Use **monograms only**, not exchange logos (trademarks). |
+| `PreviewTable`  | mono rows: status icon, TIME, SYMBOL, SIDE (green BUY/red SELL), QTY, PRICE; duplicate row amber tint, error row red tint                                    |
+| `Heatmap`       | 7-column month grid, rounded cells, green/red opacity steps                                                                                                  |
+| `BarChart`      | hour-of-day bars green above/red below baseline                                                                                                              |
+| `EquityChart`   | green line + vertical gradient fill to transparent, dotted gridlines, end dot                                                                                |
+| `TabBar`        | 4 tabs, active violet label + dot indicator                                                                                                                  |
 
 ## 4. Mockup corrections (deliberate deviations)
 
@@ -86,16 +98,17 @@ The mockups contain demo inconsistencies. The implementation must follow the dat
 
 ## 6. States (every data screen)
 
-| State | Pattern |
-|---|---|
-| loading | skeleton blocks matching the layout (no spinners for < 300 ms; delay skeleton by 150 ms) |
-| empty | illustration-free: icon, title, one sentence, primary action ("Import trades", "Add a trade"), secondary "Try demo data" |
-| error | "Couldn't load your trades." + "Try again" + "Copy error details" |
-| insufficient data | for insights/R: what's missing and how many trades are needed |
+| State             | Pattern                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| loading           | skeleton blocks matching the layout (no spinners for < 300 ms; delay skeleton by 150 ms)                                 |
+| empty             | illustration-free: icon, title, one sentence, primary action ("Import trades", "Add a trade"), secondary "Try demo data" |
+| error             | "Couldn't load your trades." + "Try again" + "Copy error details"                                                        |
+| insufficient data | for insights/R: what's missing and how many trades are needed                                                            |
 
 ## 7. Visual acceptance process
 
 For each UI step:
+
 1. Run on an Android emulator: **Pixel 7 profile, API 34+, 1080×2400, font scale 1.0**, in demo mode (seeded deterministic data) and with real-mode empty data.
 2. Capture screenshots with Maestro `takeScreenshot` (flows in `e2e/`) or `adb exec-out screencap -p > e2e/screenshots/<step>-<screen>.png`.
 3. Compare side by side with the mockup (`docs/design/mockups`), using the checklist in the step plan: layout order, tokens, typography, spacing rhythm, states. Pixel-perfect isn't the goal. **Structure, hierarchy, colors and type must match**, and the deviations in §4 are expected.

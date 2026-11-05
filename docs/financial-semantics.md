@@ -9,14 +9,14 @@ Ledgerline describes the user's past trades. It never gives predictions or advic
 
 ## 1. Units and representation
 
-| Quantity | Unit | Representation |
-|---|---|---|
-| price | quote currency per 1 base unit (e.g. USDT per BTC) | `Dec` |
-| quantity | base asset units (e.g. BTC), always > 0. Direction carries the sign. | `Dec` |
-| notional | quote units = price × quantity | `Dec` |
-| fees, funding, PnL, risk, balances | quote currency of the account (`USDT`/`USDC`/`USD`) | `Dec` |
-| R multiple | dimensionless | `Dec` |
-| timestamps | epoch ms UTC | `number` (integer) |
+| Quantity                           | Unit                                                                 | Representation     |
+| ---------------------------------- | -------------------------------------------------------------------- | ------------------ |
+| price                              | quote currency per 1 base unit (e.g. USDT per BTC)                   | `Dec`              |
+| quantity                           | base asset units (e.g. BTC), always > 0. Direction carries the sign. | `Dec`              |
+| notional                           | quote units = price × quantity                                       | `Dec`              |
+| fees, funding, PnL, risk, balances | quote currency of the account (`USDT`/`USDC`/`USD`)                  | `Dec`              |
+| R multiple                         | dimensionless                                                        | `Dec`              |
+| timestamps                         | epoch ms UTC                                                         | `number` (integer) |
 
 - `Dec` = `decimal.js` configured with `precision: 40` and `rounding: ROUND_HALF_EVEN` for internal
   arithmetic. **No intermediate rounding.** Rounding happens only at display (§8) and when storing
@@ -41,6 +41,7 @@ Ledgerline describes the user's past trades. It never gives predictions or advic
 ## 3. Per-trade calculations (`src/domain/trade/compute.ts`)
 
 ### 3.1 Gross PnL
+
 - Long: `gross = (exit − entry) × qty`
 - Short: `gross = (entry − exit) × qty`
 - `entry`/`exit` are quantity-weighted average prices (`Σ pᵢqᵢ / Σ qᵢ`, unrounded).
@@ -49,7 +50,9 @@ Ledgerline describes the user's past trades. It never gives predictions or advic
   `pnl_mismatch`. The trade still stores the exchange value.
 
 ### 3.2 Net PnL
+
 `net = gross − fees + funding`
+
 - `fees` are positive costs. A maker rebate is a negative fee, so it increases net.
 - `funding` is signed: positive = received, negative = paid.
 - `fundingStatus`: `included` (funding is known and present), `none` (spot, or a user-confirmed zero),
@@ -60,6 +63,7 @@ Ledgerline describes the user's past trades. It never gives predictions or advic
   "Fees incomplete for N trades".
 
 ### 3.3 Risk and R multiple
+
 - `risk = |entry − stop| × R_qty`, where `R_qty = maxQuantity` (the peak open quantity; equals `quantity` for manual trades).
 - R is **available** only if all of these hold:
   1. `stop` is present (otherwise `no_stop`),
@@ -80,6 +84,7 @@ The mockup shows +$124.13 / +2.11R, which is gross-based. Ledgerline shows net a
 as a secondary line. The test `compute.test.ts` encodes this example.
 
 ### 3.4 Outcome classification
+
 - Round `net` to the account's display precision (2 dp, half-even).
 - `win` if > 0, `loss` if < 0, `breakeven` if = 0.
 
@@ -89,6 +94,7 @@ Input: the fills for one `(account, symbol, positionSide)`, sorted by `executedA
 `positionSide` is `long`/`short` in hedge mode and `both` in one-way mode.
 
 Average-cost method (this matches how Binance, Bybit and OKX report realized PnL for linear perps):
+
 - State: `qty` (signed: + long, − short), `avgEntry`, `maxAbsQty`, `fees`, `openedAt`, `fills[]`.
 - **Opening/increasing fill** (same sign as position, or the position is flat): `avgEntry = (avgEntry×|qty| + p×q) / (|qty|+q)`; `qty += ±q`.
 - **Reducing fill** (opposite sign, `q ≤ |qty|`): realized `+= (p − avgEntry) × q × sign(qty)`; `qty` moves toward 0; `avgEntry` unchanged. The exit average accumulates `Σ p q / Σ q` over the reducing fills.
@@ -110,6 +116,7 @@ Average-cost method (this matches how Binance, Bybit and OKX report realized PnL
 ## 5. Periods (`src/domain/metrics/periods.ts`)
 
 Let `tz` = the display time zone (device tz by default, or UTC per setting) and `today` = the local date of `now`.
+
 - `7D`: `[startOfDay(today − 6 days), now]`
 - `30D`: `[startOfDay(today − 29 days), now]`
 - `YTD`: `[startOfDay(Jan 1 of today's year), now]`
@@ -120,6 +127,7 @@ Let `tz` = the display time zone (device tz by default, or UTC per setting) and 
 ## 6. Summary metrics (`src/domain/metrics/summary.ts`)
 
 For the closed trades `T` in a period, sorted by `(closedAt, id)`:
+
 - **Net PnL** = Σ net. **Trade count** = |T|.
 - **Win rate** = wins / (wins + losses). Breakevens are excluded and their count is shown. If the denominator is 0, the value is "—".
 - **Average R** = mean of R over `T_R` = trades with available R. Shown with its sample size: "avg of 37/142
@@ -167,4 +175,5 @@ For the closed trades `T` in a period, sorted by `(closedAt, id)`:
 ## Open questions
 
 (Implementers append here, with the step ID and the case. Don't resolve them by guessing.)
+
 - Q-01 (step 11): Do the Bybit/OKX closed-PnL exports emit one row per partial close or per position? This decides import-spec §5 mapping.

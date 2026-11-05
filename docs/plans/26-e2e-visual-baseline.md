@@ -1,15 +1,19 @@
 # 26 — E2E suite and visual baseline
 
 ## Goal
+
 Consolidate the Maestro flows into a reliable suite, produce a deterministic screenshot set, run the final side-by-side review against the mockups, and accept a visual baseline.
 
 ## Depends on
+
 25.
 
 ## Read first
+
 `docs/design-system.md` §4, §7; `docs/testing-strategy.md`.
 
 ## Scope
+
 1. A deterministic clock for screenshots: a dev/e2e-only env `EXPO_PUBLIC_FIXED_NOW=2026-11-05T14:45:00Z` plus `EXPO_PUBLIC_FIXED_TZ=UTC`, read by `useNow`/the demo generator/`useDisplayTz` **only when `__DEV__`**.
    `check-release-config` fails if these are set for release.
 2. `e2e/` suite: `smoke`, `onboarding`, `quick-add`, `dashboard`, `history`, `import`, `insights`, `tilt`, `settings`, `backup`, `pro` (mock). Shared subflows in `e2e/common/` (launch fresh, enter demo, enter real with an account).
@@ -20,10 +24,13 @@ Consolidate the Maestro flows into a reliable suite, produce a deterministic scr
 5. Accept the baseline: copy the final screenshots to `docs/design/accepted/` (PNG, optimized with `pngquant` or `oxipng` if available, otherwise as-is; ≤ 400 KB each). Future UI changes must update the accepted images in the same commit.
 
 ## Out of scope
+
 Pixel-diff CI (optional future), store marketing graphics (28 uses these screenshots as raw material).
 
 ## Acceptance criteria
+
 `npm run e2e` passes 3 consecutive times on a fresh emulator (flake check); the screenshot set is complete; review.md has a verdict per screen with no open "fail".
 
 ## Gates
+
 A, D, V.

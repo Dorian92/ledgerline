@@ -1,15 +1,19 @@
 # 09 — Dashboard
 
 ## Goal
+
 Build the Home dashboard from the mockup: period selector, net PnL hero, stat tiles, equity curve, recent trades and FAB, with all states.
 
 ## Depends on
+
 07, 08.
 
 ## Read first
+
 `docs/financial-semantics.md` §5–§6, `docs/design-system.md` (mockup 1-dashboard, corrections 4 and 6), `docs/architecture.md` §3.
 
 ## Scope
+
 1. `src/data/queries/useDashboard.ts`: loads `listClosedForMetrics(accountId)` (cached under `[mode, accountId, 'metricsTrades']`),
    computes `computeSummary` for the selected period in a `useMemo`. The period is held in zustand `src/state/ui.ts` (`dashboardPeriod`, default `30D`, persisted in prefs).
    `now` comes from a `useNow(60_000)` hook (a minute tick) so "today" rolls over. `tz` comes from `useDisplayTz()` (device tz via `Intl.DateTimeFormat().resolvedOptions().timeZone`; the UTC pref arrives in 20).
@@ -33,28 +37,35 @@ Build the Home dashboard from the mockup: period selector, net PnL hero, stat ti
 5. Hide-amounts support: pass `hidden` from a `usePrivacy()` hook (a stub returning false until step 20).
 
 ## Out of scope
+
 Tilt banner logic (19), account switcher (20), widget (23).
 
 ## Tests
+
 - `buildEquityPath`: monotonic x, min/max mapping, a single point, all-equal values (no divide by zero).
 - DashboardScreen with a mocked `useDashboard`: renders hero/tiles/chart with formatted values; `—` for null winRate/avgR; DD falls back to abs; the empty real-account state; the empty-period state; the loading skeleton; the error retry calls refetch.
 - Integration: for the demo seed with a fixed `now`, the numbers shown equal `computeSummary` outputs (test via a pure `toDashboardViewModel(summary)` function).
 
 ## Acceptance criteria
+
 - Every number on screen comes from `computeSummary` via the view model; nothing is computed in components.
 - Period switch updates all numbers within one render.
 - The demo dashboard's "today" trades match what history shows in step 10.
 
 ## Gates
+
 A, D (`e2e/dashboard.yaml`: demo mode, switch through the 4 periods, tap "See all", tap the FAB, then close), V.
 
 ## Visual check
+
 Side by side with `1-dashboard.png`: order (header, caption, hero, subline, segmented, tiles, equity card, [banner], recent trades, FAB), colors, the gradient chart, tile typography.
 Expected deviations: real computed values; USD glyph only for USD accounts.
 
 ## Review checklist
+
 - [ ] The Dec→number conversion happens only in `paths.ts`.
 - [ ] The minute tick doesn't recompute metrics unless the day/period range changes (memo on range).
 
 ## Risks / notes
+
 `react-native-svg` gradient (`LinearGradient` + `Defs`) works on Android. Keep the path ≤ 120 points via `downsampleEquity`.

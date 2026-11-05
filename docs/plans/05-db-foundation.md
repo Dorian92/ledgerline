@@ -1,16 +1,20 @@
 # 05 — DB foundation
 
 ## Goal
+
 Provide the SQLite access layer, the migration runner, schema 0001 and repositories for accounts, trades, tags and prefs,
 with calc-on-write, tested against real SQLite in Node.
 
 ## Depends on
-04.
+
+4.
 
 ## Read first
+
 `docs/data-model.md` (all), `docs/architecture.md` §3–§4, `docs/financial-semantics.md` §9.
 
 ## Scope
+
 1. Dependencies: `npx expo install expo-sqlite expo-crypto`; dev: `npm i -D better-sqlite3 @types/better-sqlite3`.
 2. `src/data/db/types.ts`:
    ```ts
@@ -19,7 +23,7 @@ with calc-on-write, tested against real SQLite in Node.
      run(sql: string, params?: SqlParam[]): Promise<{ changes: number }>;
      all<T>(sql: string, params?: SqlParam[]): Promise<T[]>;
      get<T>(sql: string, params?: SqlParam[]): Promise<T | null>;
-     transaction<T>(fn: (tx: Db) => Promise<T>): Promise<T>;   // nested calls reuse the outer tx
+     transaction<T>(fn: (tx: Db) => Promise<T>): Promise<T>; // nested calls reuse the outer tx
      close(): Promise<void>;
    }
    type SqlParam = string | number | null;
@@ -47,9 +51,11 @@ with calc-on-write, tested against real SQLite in Node.
 10. `src/data/DbProvider.tsx`: React context exposing `{ db, repos }` for the active database.
 
 ## Out of scope
+
 Demo DB/mode switching (06), import tables usage (16), React Query hooks beyond a placeholder (added per feature), backup.
 
 ## Tests (better-sqlite3)
+
 - Migrations: fresh DB → user_version 1; running twice is a no-op; a failing migration rolls back and keeps the version; downgrade rejected.
 - Schema constraints: closed trade without exit_price rejected by CHECK; FK cascade on account delete removes trades + trade_tags.
 - trades.create stores the canonical strings and the derived fields from `computeTrade` (the worked example from §3.3).
@@ -61,17 +67,21 @@ Demo DB/mode switching (06), import tables usage (16), React Query hooks beyond 
 - Transaction rollback: an error thrown inside `transaction` leaves no partial rows.
 
 ## Acceptance criteria
+
 - All tests pass, `src/data` coverage ≥ 80% (enable the threshold and add `test:coverage` to `check`).
 - App boots on the emulator; the progress log notes the user_version read back (a dev log line is fine).
 
 ## Gates
+
 A, D (app launches, no DB error screen).
 
 ## Review checklist
+
 - [ ] Every SQL query is parameterized (no string interpolation of values).
 - [ ] All multi-statement writes are in `transaction`.
 - [ ] No float conversions in mappers.
 
 ## Risks / notes
+
 `better-sqlite3` needs a native build in Node. If prebuilt binaries are unavailable, install build tools (python3, make, g++).
 The expo-sqlite async API names vary slightly between SDKs, so check the installed version's docs.

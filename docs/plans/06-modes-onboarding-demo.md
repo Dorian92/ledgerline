@@ -1,16 +1,20 @@
 # 06 — Data modes, onboarding and demo data
 
 ## Goal
+
 Separate demo data from real data physically (two DB files), add first-run onboarding with "Explore demo" /
 "Start my journal", create the first real account, and add a deterministic, self-consistent synthetic demo dataset.
 
 ## Depends on
+
 02, 05.
 
 ## Read first
+
 `docs/architecture.md` §4–§5, `docs/design-system.md` §4 (items 4–6), `docs/data-model.md`.
 
 ## Scope
+
 1. `src/state/session.ts` (zustand): `{ mode: 'unset'|'demo'|'real'; activeAccountId: string | null; setMode; setActiveAccount }`,
    hydrated from the real DB's `app_prefs` at bootstrap and persisted on change.
 2. `src/data/bootstrap.ts`: extend to `openDatabases()` → `{ realDb, getDemoDb(): Promise<Db> }`. The demo DB (`ledgerline-demo.db`) is created on first
@@ -42,9 +46,11 @@ Separate demo data from real data physically (two DB files), add first-run onboa
 9. Placeholder Home in this step: show the account name, mode and trade count (temporary dev text, replaced in 09) so the device gate can verify seeding.
 
 ## Out of scope
+
 Settings screen (20); multiple real accounts UI (20); dashboard UI (09).
 
 ## Tests
+
 - Generator determinism: same seed + now → deep-equal output; a different seed → different output.
 - Generator consistency: every trade passes `validateTradeInput`; today has 3 closed trades, 2 wins and 1 loss; win rate between 50 and 65%;
   ≥ 5 revenge-pattern trades; ≥ 2 oversize-after-streak instances; post-22:00 win rate ≥ 15 pp below overall (tz `Europe/Berlin` and `UTC` both checked).
@@ -53,19 +59,24 @@ Settings screen (20); multiple real accounts UI (20); dashboard UI (09).
 - Mode switch: the query cache keys change (unit test on a key factory `qk.trades(mode, accountId)`).
 
 ## Acceptance criteria
+
 - Fresh install → welcome. Demo → tabs with the DEMO pill and a seeded count. Pill → "Start my journal" → create account → real mode with 0 trades.
 - Relaunch keeps the mode. "Reset demo data" regenerates relative to the current date.
 
 ## Gates
+
 A, D (`e2e/onboarding.yaml`: fresh install with `clearState`, then demo path, then switch to real, then create an account), V.
 
 ## Visual check
+
 Welcome, create-account and the demo pill sheet. No mockup exists for these, so follow the tokens and the dashboard header style. Check the copy is honest.
 
 ## Review checklist
+
 - [ ] No code path can write `source='demo'` rows into the real DB.
 - [ ] Generator uses no floats or `Math.random`.
 - [ ] Mode persists across restarts.
 
 ## Risks / notes
+
 Closing and deleting an open expo-sqlite DB while queries are in flight can crash. Cancel and clear React Query first, then close, then delete.
