@@ -1,7 +1,4 @@
 import type { Dec } from '../money/dec';
-import type { QuoteCurrency } from '../money/types';
-
-export const CALC_VERSION = 1;
 
 export type Direction = 'long' | 'short';
 export type Emotion = 'calm' | 'fomo' | 'revenge' | 'fear';

@@ -1,11 +1,11 @@
 import * as fc from 'fast-check';
 
 import { dec } from '../../money/dec';
+import type { TradeInput } from '../types';
 import {
   classifyOutcome,
   computeTrade,
   grossFromPrices,
-  type TradeInput,
 } from '../compute';
 
 const baseInput = (): TradeInput => ({

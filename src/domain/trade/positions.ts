@@ -1,4 +1,4 @@
-import { add, div, max, mul, sub, ZERO, type Dec } from '../money/dec';
+import { add, div, max, mul, sub, dec, ZERO, type Dec } from '../money/dec';
 import type {
   BuiltTrade,
   FillInput,
@@ -138,7 +138,7 @@ function applyReduce(
   q: Dec,
   feePortion: Dec,
 ): PositionState {
-  const sign = state.qty.isPositive() ? 1 : -1;
+  const sign = state.qty.isPositive() ? dec('1') : dec('-1');
   const realizedAdd = mul(mul(sub(fill.price, state.avgEntry), q), sign);
   const newQty = state.qty.isPositive() ? sub(state.qty, q) : add(state.qty, q);
   return {

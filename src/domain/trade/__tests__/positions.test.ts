@@ -1,5 +1,6 @@
 import { dec } from '../../money/dec';
-import { buildPositionsFromFills, type FillInput } from '../positions';
+import { buildPositionsFromFills } from '../positions';
+import type { FillInput } from '../types';
 
 function fill(partial: Partial<FillInput> & Pick<FillInput, 'sourceIndex' | 'side' | 'price' | 'quantity'>): FillInput {
   return {
