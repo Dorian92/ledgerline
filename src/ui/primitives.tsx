@@ -76,14 +76,22 @@ const statStyles = StyleSheet.create({
   value: { fontSize: 18, fontWeight: '600' },
 });
 
-export function Fab({ onPress, testID }: { onPress: () => void; testID?: string }) {
+export function Fab({
+  onPress,
+  testID,
+  style,
+}: {
+  onPress: () => void;
+  testID?: string;
+  style?: object;
+}) {
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel="Add trade"
       onPress={onPress}
-      style={fabStyles.fab}
+      style={[fabStyles.fab, style]}
     >
       <Text style={fabStyles.plus}>+</Text>
     </Pressable>

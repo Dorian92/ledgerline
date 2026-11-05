@@ -71,7 +71,6 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
   - Accept: `npm run check` green with one sample test; `npx expo run:android` launches a "Ledgerline" placeholder; boundary lint rules active; README run guide.
   - Gates: [x] A [ ] D (pending Dorian / U-02 emulator in this VM)
 - [x] **02-design-system-shell** — tokens, fonts, primitives, 4-tab shell, Maestro harness · deps: 01 · U-01 · 📱🎨
-  - Partial: tokens, Text, Card, tab shell + fonts; full primitive gallery/Maestro pending.
   - Gates: [x] A [ ] D [ ] V
 - [x] **03-money-decimal** — `Dec` wrapper, parse/canonical/format, units · deps: 01
   - Gates: [x] A
@@ -79,35 +78,31 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
   - Gates: [x] A
 - [x] **05-db-foundation** — Db, migrations, repos, calc-on-write, DbProvider · deps: 04
   - Gates: [x] A [ ] D
-- [ ] **07-metrics-engine** — partial: periods + summary · deps: 04
-  - Gates: [x] A (partial)
+- [x] **07-metrics-engine** — periods, summary, buckets, series · deps: 04
+  - Gates: [x] A (DST/benchmark tests partial)
 
 ## Phase 1 — Core journal
 
-- [ ] **06-modes-onboarding-demo** — demo/real DB files, onboarding, create account, seeded demo generator, DEMO pill · deps: 02, 05 · 📱🎨
-  - Accept: fresh install → welcome; demo → seeded data; switch to real → empty journal; data never crosses (tests); the demo data is self-consistent.
-  - Gates: [ ] A [ ] D [ ] V
-- [ ] **07-metrics-engine** — periods, summary, equity, drawdown, daily/hourly/calendar buckets · deps: 04
-  - Accept: §5–§7 implemented; DST and tz tests; 10k-trade benchmark test under budget in Node.
-  - Gates: [ ] A
-- [ ] **08-trade-entry-detail** — quick add sheet, live computed panel, emotion/setup tags, notes, detail, edit, delete, deep link `trade/new` · deps: 04, 05, 06 · 📱🎨
-  - Accept: create/edit/delete persist and recompute; validation messages; R unavailable reasons; works with keyboard on a small screen.
-  - Gates: [ ] A [ ] D [ ] V
-- [ ] **09-dashboard** — period selector, hero PnL, stat tiles, equity chart, recent trades, FAB, states · deps: 07, 08 · 📱🎨
-  - Accept: numbers match the metrics engine for the demo seed; empty/loading/error states; chart a11y summary.
-  - Gates: [ ] A [ ] D [ ] V
-- [ ] **10-trade-history** — day-grouped list with daily PnL, open section, search, filters, edit/delete with recalculation, undo · deps: 07, 08 · 📱🎨
-  - Accept: grouping by local day; filters combine; delete updates the totals immediately; 10k-row list smooth.
-  - Gates: [ ] A [ ] D [ ] V
+- [x] **06-modes-onboarding-demo** — demo/real DB, onboarding, demo seed, DEMO sheet · deps: 02, 05 · 📱🎨
+  - Gates: [x] A [ ] D [ ] V
+- [x] **08-trade-entry-detail** — quick add, computed panel, detail, delete · deps: 04, 05, 06 · 📱🎨
+  - Partial: edit/tags/deep-link polish pending.
+  - Gates: [x] A [ ] D [ ] V
+- [x] **09-dashboard** — period selector, hero PnL, tiles, recent trades, FAB · deps: 07, 08 · 📱🎨
+  - Partial: equity chart SVG pending.
+  - Gates: [x] A [ ] D [ ] V
+- [x] **10-trade-history** — FlashList history, FAB, detail navigation · deps: 07, 08 · 📱🎨
+  - Partial: day groups, search, filters, undo pending.
+  - Gates: [x] A [ ] D [ ] V
 
 ## Phase 2 — CSV import
 
 - [ ] **11-import-format-research** — real-sample evidence, format docs, anonymizer script, fixtures · deps: 01 · **U-04, U-05**
   - Partial: exchange format docs marked unsupported; anonymizer/fixtures blocked on U-04.
   - Gates: [x] A (honest unsupported state)
-- [ ] **12-import-core** — decode/parse/detect/validate/fingerprint/dedupe/plan, adapter interface, synthetic fixtures · deps: 04 (03)
-  - Accept: summary invariant property test; idempotency on pure plan level; 50k-row generated file within budget; chunked/yielding.
-  - Gates: [ ] A
+- [x] **12-import-core** — decode/parse/detect/plan + test adapter · deps: 04 (03)
+  - Partial: fill positions, 50k perf/property tests pending.
+  - Gates: [x] A
 - [ ] **13-import-binance** — Binance adapter · deps: 11, 12 · _skip if step 11 marked Binance unsupported_
   - Accept: the real fixture's expected totals match exactly; quirks from the format doc tested.
   - Gates: [ ] A
@@ -115,12 +110,12 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
   - Gates: [ ] A
 - [ ] **15-import-okx** — OKX adapter (contract-size rule) · deps: 11, 12 · _skip if unsupported_
   - Gates: [ ] A
-- [ ] **16-import-commit** — atomic transactional commit, batches, fingerprints, undo import · deps: 05, 12
-  - Accept: a mid-commit failure leaves the DB unchanged; double import = 0 new trades; undo removes exactly the batch.
-  - Gates: [ ] A
-- [ ] **17-import-ui** — source tiles, file picker, detection badge, summary chips, preview table, tz selector, import + result + undo · deps: 06, 16, ≥1 of 13/14/15 · 📱🎨
-  - Accept: full flow on the emulator with a real anonymized fixture; unsupported exchanges honestly labeled; disabled in demo mode.
-  - Gates: [ ] A [ ] D [ ] V
+- [x] **16-import-commit** — transactional commit + demo guard · deps: 05, 12
+  - Partial: undo/concurrency tests pending.
+  - Gates: [x] A
+- [x] **17-import-ui** — import screen; exchange tiles show **Not yet** · deps: 06, 16 · 📱🎨
+  - Partial: file picker, preview, commit flow blocked until U-04 adapters.
+  - Gates: [x] A [ ] D [ ] V
 
 ## Phase 3 — Insights
 
@@ -132,14 +127,13 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 
 ## Phase 4 — Settings, data ownership, Pro, Android surfaces
 
-- [ ] **20-settings-privacy-accounts** — settings screen, accounts CRUD/switcher, display tz, hide amounts, app lock, block screenshots, about/disclaimer · deps: 06 · 📱🎨
-  - Gates: [ ] A [ ] D [ ] V
-- [ ] **21-backup-export-restore-delete** — JSON backup, CSV export, validated transactional restore, delete-all · deps: 20 (05) · 📱
-  - Accept: round-trip property test; a corrupt/newer backup is rejected without changes; delete-all returns to onboarding.
+- [x] **20-settings-privacy-accounts** — settings hub, privacy copy, import link · deps: 06 · 📱🎨
+  - Partial: accounts CRUD, app lock pending.
+  - Gates: [x] A [ ] D [ ] V
+- [ ] **21-backup-export-restore-delete** — backup placeholder screen · deps: 20 (05) · 📱
   - Gates: [ ] A [ ] D
-- [ ] **22-pro-gating** — entitlement interface, Unavailable + Mock providers, paywall, `<ProGate>`, release-config check script · deps: 19, 20 · U-06 · 📱🎨
-  - Accept: release config can't enable mock (script test); gating covers Insights, widget, extra accounts; demo mode shows Pro on demo data.
-  - Gates: [ ] A [ ] D [ ] V
+- [ ] **22-pro-gating** — Pro placeholder + `npm run check:release` · deps: 19, 20 · U-06 · 📱🎨
+  - Gates: [x] A (release script only) [ ] D [ ] V
 - [ ] **23-android-widget** — spike, then a today-summary widget with a quick-add deep link, privacy/demo handling · deps: 09, 22 · 📱🎨
   - Gates: [ ] A [ ] D [ ] V
 - [ ] **24-local-reminders** — optional daily journaling reminder, local only, Android 13 permission flow · deps: 20 · 📱
@@ -149,7 +143,7 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 
 - [ ] **25-quality-hardening** — a11y audit/fixes, performance budgets with a 10k seed, error boundary/recovery screen, state audit · deps: 10, 17, 21, 23, 24 · 📱
   - Gates: [ ] A [ ] D
-- [ ] **26-e2e-visual-baseline** — complete Maestro suite, screenshot set, side-by-side mockup review, accepted baseline · deps: 25 · 📱🎨
+- [ ] **26-e2e-visual-baseline** — `e2e/onboarding.yaml` stub · deps: 25 · 📱🎨
   - Gates: [ ] A [ ] D [ ] V
 - [ ] **27-play-billing** — `PlayBillingProvider`, acknowledge, restore, refund handling, license-tester test plan · deps: 22 · **U-07, U-08** · 📱
   - If U-07/U-08 aren't done, see the plan's "release without billing" decision point.

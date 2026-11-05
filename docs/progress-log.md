@@ -2,10 +2,11 @@
 
 One entry per step: date, step, commit SHA(s), gates run with results, deviations/decisions, follow-ups.
 
-## 2026-11-05 — execution (partial)
+## 2026-11-05 — steps 02, 06–10, 12, 16–17, partial 20/22/26
 
-- Steps 01–04 complete (gate A). Step 02 partial (tab shell). Step 05 partial (migrations). Step 11 honest unsupported stubs.
-- U-01 mockup PNGs not on VM disk — `docs/design/mockups/README.md` only. Gate D/V pending (no Android SDK).
+- Gate A green: `npm run check` — 16 suites / 44 tests (after import UI test).
+- Shipped: onboarding + demo/real DB modes, dashboard, trade quick-add/history, import pipeline + commit repo, import UI with **Not yet** exchange tiles, settings hub, Maestro onboarding stub.
+- Still partial vs plans: 07 DST/benchmark, 08 edit/tags, 09 equity chart, 10 day groups/filters, 12 fill/50k tests, 16 undo tests, 17 preview/commit, 18–24 largely stubbed, 25 not started.
 
 ## 2026-11-05 — step 01-scaffold
 

@@ -2,7 +2,7 @@ import { Text as RNText, type TextProps, StyleSheet } from 'react-native';
 
 import { color } from './tokens';
 
-type Variant = 'title' | 'body' | 'secondary' | 'caption' | 'mono' | 'section';
+type Variant = 'title' | 'body' | 'secondary' | 'caption' | 'mono' | 'section' | 'monoSmall';
 
 const styles = StyleSheet.create({
   title: { color: color.text, fontSize: 26, fontWeight: '700' },
@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   mono: { color: color.text, fontSize: 15, fontFamily: 'JetBrainsMono_400Regular' },
+  monoSmall: { color: color.textSecondary, fontSize: 13, fontFamily: 'JetBrainsMono_400Regular' },
 });
 
 export function Text({ variant = 'body', style, ...rest }: TextProps & { variant?: Variant }) {

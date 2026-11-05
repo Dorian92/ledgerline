@@ -1,69 +1,92 @@
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
-import { systemClock } from '@/data/clock';
-import type { Db } from '@/data/db/types';
-import { openExpoDb } from '@/data/db/expoDb';
-import { expoIds } from '@/data/ids.expo';
-import { createAccountsRepo, createPrefsRepo, createTagsRepo } from '@/data/repositories/index';
-import { createTradesRepo } from '@/data/repositories/trades';
+import { getDemoDatabase, openRealDatabase } from '@/data/bootstrap';
+import type { Repos } from './DbProvider.types';
+import { useSession, type AppMode } from '@/state/session';
 
-export interface Repos {
-  accounts: ReturnType<typeof createAccountsRepo>;
-  trades: ReturnType<typeof createTradesRepo>;
-  tags: ReturnType<typeof createTagsRepo>;
-  prefs: ReturnType<typeof createPrefsRepo>;
-}
+export type { Repos };
 
 interface DbContextValue {
-  db: Db;
-  repos: Repos;
+  repos: Repos | null;
   ready: boolean;
   error: Error | null;
+  refreshMode: (mode: AppMode) => Promise<void>;
 }
 
 const DbContext = createContext<DbContextValue | null>(null);
 
+async function reposForMode(mode: AppMode): Promise<Repos> {
+  if (mode === 'demo') {
+    return (await getDemoDatabase()).repos;
+  }
+  return (await openRealDatabase()).repos;
+}
+
 export function DbProvider({ children }: { children: ReactNode }) {
-  const [value, setValue] = useState<DbContextValue | null>(null);
+  const [repos, setRepos] = useState<Repos | null>(null);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const setMode = useSession((s) => s.setMode);
+  const setActiveAccountId = useSession((s) => s.setActiveAccountId);
+
+  const refreshMode = useCallback(
+    async (mode: AppMode) => {
+      const r = await reposForMode(mode);
+      setRepos(r);
+      setMode(mode);
+      await r.prefs.set('mode', mode);
+      const accounts = await r.accounts.list();
+      setActiveAccountId(accounts[0]?.id ?? null);
+    },
+    [setActiveAccountId, setMode],
+  );
 
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
-        const db = await openExpoDb('ledgerline.db');
-        const deps = { ids: expoIds, clock: systemClock };
-        const repos: Repos = {
-          accounts: createAccountsRepo(db, deps),
-          trades: createTradesRepo(db, deps),
-          tags: createTagsRepo(db, deps),
-          prefs: createPrefsRepo(db, deps),
-        };
-        await repos.trades.recomputeOutdated();
-        if (!cancelled) {
-          setValue({ db, repos, ready: true, error: null });
+        const { repos: realRepos } = await openRealDatabase();
+        const mode = (await realRepos.prefs.get('mode')) ?? 'unset';
+        setMode(mode);
+        if (mode === 'demo') {
+          setRepos((await getDemoDatabase()).repos);
+        } else if (mode === 'real') {
+          setRepos(realRepos);
+          const stored = await realRepos.prefs.get('active_account_id');
+          const accounts = await realRepos.accounts.list();
+          const active =
+            stored && accounts.some((a) => a.id === stored) ? stored : (accounts[0]?.id ?? null);
+          setActiveAccountId(active);
+        } else {
+          setRepos(realRepos);
         }
+        setReady(true);
       } catch (e) {
-        if (!cancelled) {
-          setValue({
-            db: null as unknown as Db,
-            repos: null as unknown as Repos,
-            ready: false,
-            error: e instanceof Error ? e : new Error(String(e)),
-          });
-        }
+        setError(e instanceof Error ? e : new Error(String(e)));
+        setReady(true);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [setActiveAccountId, setMode]);
 
-  if (!value) {
+  const value = useMemo(
+    () => ({ repos, ready, error, refreshMode }),
+    [repos, ready, error, refreshMode],
+  );
+
+  if (!ready) {
     return null;
   }
-  if (value.error) {
+  if (error || !repos) {
     return null;
   }
+
   return <DbContext.Provider value={value}>{children}</DbContext.Provider>;
 }
 
@@ -75,6 +98,10 @@ export function useRepos(): Repos {
   return ctx.repos;
 }
 
-export function useDbReady(): boolean {
-  return useContext(DbContext)?.ready ?? false;
+export function useDb(): { refreshMode: (m: AppMode) => Promise<void> } {
+  const ctx = useContext(DbContext);
+  if (!ctx) {
+    throw new Error('DbProvider not ready');
+  }
+  return { refreshMode: ctx.refreshMode };
 }

@@ -72,6 +72,70 @@ export function createTradesRepo(db: Db, deps: { ids: IdGenerator; clock: Clock 
     async delete(id: string) {
       await db.run('DELETE FROM trades WHERE id = ?', [id]);
     },
+    async get(id: string) {
+      return db.get('SELECT * FROM trades WHERE id = ?', [id]);
+    },
+    async listForAccount(accountId: string) {
+      return db.all(
+        `SELECT id, symbol, direction, status, opened_at, closed_at, net_pnl, r_multiple
+         FROM trades WHERE account_id = ?
+         ORDER BY COALESCE(closed_at, opened_at) DESC, id DESC`,
+        [accountId],
+      );
+    },
+    async update(id: string, input: TradeInput) {
+      const account = accountFromQuote(input.quoteAsset);
+      const v = validateTradeInput(input, account);
+      if (!v.ok) {
+        throw new Error(JSON.stringify(v.errors));
+      }
+      const now = deps.clock.now();
+      const row = tradeInputToRow(id, input, 'manual', now);
+      await db.run(
+        `UPDATE trades SET
+          symbol=?, base_asset=?, quote_asset=?, instrument=?, direction=?, status=?,
+          opened_at=?, closed_at=?, entry_price=?, exit_price=?, quantity=?, max_quantity=?,
+          stop_price=?, leverage=?, fees=?, fees_complete=?, funding=?, funding_status=?,
+          pnl_source=?, gross_pnl=?, net_pnl=?, risk_amount=?, r_multiple=?, r_unavailable_reason=?,
+          emotion=?, notes=?, updated_at=?, calc_version=?
+         WHERE id=?`,
+        [
+          row.symbol,
+          row.base_asset,
+          row.quote_asset,
+          row.instrument,
+          row.direction,
+          row.status,
+          row.opened_at,
+          row.closed_at,
+          row.entry_price,
+          row.exit_price,
+          row.quantity,
+          row.max_quantity,
+          row.stop_price,
+          row.leverage,
+          row.fees,
+          row.fees_complete,
+          row.funding,
+          row.funding_status,
+          row.pnl_source,
+          row.gross_pnl,
+          row.net_pnl,
+          row.risk_amount,
+          row.r_multiple,
+          row.r_unavailable_reason,
+          row.emotion,
+          row.notes,
+          row.updated_at,
+          row.calc_version,
+          id,
+        ],
+      );
+      await db.run('DELETE FROM trade_tags WHERE trade_id = ?', [id]);
+      for (const tagId of input.tagIds) {
+        await db.run('INSERT INTO trade_tags (trade_id, tag_id) VALUES (?, ?)', [id, tagId]);
+      }
+    },
     async listClosedForMetrics(accountId: string) {
       return db.all(
         `SELECT id, symbol, direction, opened_at, closed_at, net_pnl, r_multiple, quantity,

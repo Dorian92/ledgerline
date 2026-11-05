@@ -1,0 +1,7 @@
+appId: com.ledgerline.app
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'Ledgerline'
+- tapOn: 'Explore with demo data'
+- assertVisible: 'DEMO DATA'
