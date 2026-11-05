@@ -7,7 +7,9 @@ import { useDashboard } from '@/data/queries/useDashboard';
 import { formatPercent, formatR } from '@/domain/money/format';
 import { EquityChart } from '@/ui/charts/EquityChart';
 import { toDashboardViewModel } from '@/features/dashboard/viewModel';
+import { CaveatSheet } from '@/features/dashboard/CaveatSheet';
 import { useSession } from '@/state/session';
+import { usePrivacy } from '@/state/privacy';
 import { DemoSheet } from '@/features/demo/DemoSheet';
 import { Money } from '@/ui/Money';
 import { Text } from '@/ui/Text';
@@ -20,6 +22,9 @@ import type { PeriodKey } from '@/domain/metrics';
 export default function DashboardScreen() {
   const [period, setPeriod] = useState<PeriodKey>('30D');
   const [demoOpen, setDemoOpen] = useState(false);
+  const [caveatOpen, setCaveatOpen] = useState(false);
+  const hideAmounts = usePrivacy((s) => s.hideAmounts);
+  const setHideAmounts = usePrivacy((s) => s.setHideAmounts);
   const { data, isLoading, error, refetch } = useDashboard(period);
   const mode = useSession((s) => s.mode);
   const router = useRouter();
@@ -77,8 +82,18 @@ export default function DashboardScreen() {
             <Text variant="caption" style={{ marginTop: space.lg }}>
               NET PNL · {period}
             </Text>
-            <Money amount={s.netPnl} currency="USD" variant="hero" />
-            <Text variant="secondary">{toDashboardViewModel(s, 'USD').subline}</Text>
+            <Pressable
+              onLongPress={() => setHideAmounts(!hideAmounts)}
+              accessibilityRole="button"
+              accessibilityHint="Long press to hide or show amounts"
+            >
+              <Money amount={s.netPnl} currency="USD" variant="hero" hidden={hideAmounts} />
+            </Pressable>
+            <Pressable onPress={() => setCaveatOpen(true)} accessibilityRole="button">
+              <Text variant="secondary">
+                {toDashboardViewModel(s, 'USD').subline} · About stats
+              </Text>
+            </Pressable>
             <View style={styles.tiles}>
               <StatTile label="WIN RATE" value={s.winRate ? formatPercent(s.winRate, 1) : '—'} />
               <StatTile label="AVG R" value={s.avgR ? formatR(s.avgR) : '—'} />
@@ -116,6 +131,9 @@ export default function DashboardScreen() {
         ) : null}
       </ScrollView>
       <DemoSheet visible={demoOpen} onClose={() => setDemoOpen(false)} />
+      {s ? (
+        <CaveatSheet visible={caveatOpen} onClose={() => setCaveatOpen(false)} summary={s} />
+      ) : null}
       <View style={styles.fabWrap}>
         <Fab testID="fab-add" onPress={() => router.push('/trade/new')} />
       </View>

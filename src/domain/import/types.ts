@@ -1,6 +1,6 @@
 import type { QuoteCurrency } from '@/domain/money/types';
 import type { Dec } from '@/domain/money/dec';
-import type { TradeInput } from '@/domain/trade/types';
+import type { FillInput, TradeInput } from '@/domain/trade/types';
 
 export type RowStatus = 'valid' | 'warning' | 'duplicate' | 'error';
 
@@ -37,6 +37,19 @@ export type NormalizedRow =
       closedAt: number;
       raw: string[];
     }
+  | {
+      kind: 'fill';
+      sourceIndex: number;
+      symbol: string;
+      baseAsset: string;
+      quoteAsset: QuoteCurrency;
+      side: 'buy' | 'sell';
+      price: Dec;
+      quantity: Dec;
+      feeQuote: Dec;
+      executedAt: number;
+      raw: string[];
+    }
   | { kind: 'error'; sourceIndex: number; code: RowErrorCode; message: string; raw: string[] };
 
 export interface ImportPlan {
@@ -57,6 +70,7 @@ export interface ImportPlan {
   rows: { index: number; status: RowStatus; codes: string[]; display: PreviewCells }[];
   trades: {
     input: Omit<TradeInput, 'accountId' | 'tagIds' | 'notes' | 'emotion'>;
+    fills?: FillInput[];
     fingerprints: string[];
   }[];
   messages: { level: 'warning' | 'error'; text: string; rowIndexes: number[] }[];

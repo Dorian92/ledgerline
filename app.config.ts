@@ -20,7 +20,28 @@ const config: ExpoConfig = {
       backgroundColor: '#7C5CFF',
     },
   },
-  plugins: ['./plugins/withNoBackup', 'expo-sqlite'],
+  plugins: [
+    './plugins/withNoBackup',
+    'expo-sqlite',
+    [
+      'react-native-android-widget',
+      {
+        widgets: [
+          {
+            name: 'Today',
+            label: 'Ledgerline Today',
+            minWidth: '250dp',
+            minHeight: '110dp',
+            targetCellWidth: 4,
+            targetCellHeight: 2,
+            description: 'Today journal summary',
+            previewImage: './assets/icon.png',
+            updatePeriodMillis: 1800000,
+          },
+        ],
+      },
+    ],
+  ],
 };
 
 export default config;

@@ -43,6 +43,27 @@ export function createAccountsRepo(db: Db, deps: { ids: IdGenerator; clock: Cloc
         'SELECT id, name, quote_currency FROM accounts WHERE archived_at IS NULL ORDER BY created_at',
       );
     },
+    async update(id: string, patch: { name?: string; startingBalance?: string | null }) {
+      const now = deps.clock.now();
+      if (patch.name !== undefined) {
+        await db.run('UPDATE accounts SET name = ?, updated_at = ? WHERE id = ?', [
+          patch.name,
+          now,
+          id,
+        ]);
+      }
+      if (patch.startingBalance !== undefined) {
+        await db.run('UPDATE accounts SET starting_balance = ?, updated_at = ? WHERE id = ?', [
+          patch.startingBalance,
+          now,
+          id,
+        ]);
+      }
+    },
+    async rename(id: string, name: string) {
+      const now = deps.clock.now();
+      await db.run('UPDATE accounts SET name = ?, updated_at = ? WHERE id = ?', [name, now, id]);
+    },
     async delete(id: string) {
       await db.run('DELETE FROM accounts WHERE id = ?', [id]);
     },
@@ -53,6 +74,10 @@ const prefSchemas = {
   mode: z.enum(['unset', 'demo', 'real']),
   active_account_id: z.string().nullable(),
   display_tz: z.enum(['device', 'UTC']),
+  hide_amounts: z.boolean(),
+  app_lock_enabled: z.boolean(),
+  reminder_hour: z.number().int().min(0).max(23),
+  reminder_minute: z.number().int().min(0).max(59),
 } as const;
 
 export type PrefKey = keyof typeof prefSchemas;

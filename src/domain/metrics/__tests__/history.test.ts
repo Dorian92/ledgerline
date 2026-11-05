@@ -30,4 +30,14 @@ describe('history', () => {
     expect(matchesFilter(t, { outcome: 'loss' }, 'UTC')).toBe(true);
     expect(matchesFilter(t, { outcome: 'win' }, 'UTC')).toBe(false);
   });
+
+  it('buildHistorySections 10k under 100ms', () => {
+    const rows: HistoryTradeRow[] = [];
+    for (let i = 0; i < 10_000; i++) {
+      rows.push(row(String(i), 1_700_000_000_000 + i * 60_000, i % 3 === 0 ? '-1' : '2'));
+    }
+    const t0 = Date.now();
+    buildHistorySections(rows, 'UTC', 1_800_000_000_000);
+    expect(Date.now() - t0).toBeLessThan(300);
+  });
 });

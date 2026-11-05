@@ -11,6 +11,7 @@ import React, {
 import { getDemoDatabase, openRealDatabase } from '@/data/bootstrap';
 import type { Repos } from './DbProvider.types';
 import { useSession, type AppMode } from '@/state/session';
+import { usePrivacy } from '@/state/privacy';
 
 export type { Repos };
 
@@ -60,6 +61,14 @@ export function DbProvider({ children }: { children: ReactNode }) {
         } else if (mode === 'real') {
           setRepos(realRepos);
           const stored = await realRepos.prefs.get('active_account_id');
+          const hide = await realRepos.prefs.get('hide_amounts');
+          const tz = await realRepos.prefs.get('display_tz');
+          if (hide !== null) {
+            usePrivacy.getState().setHideAmounts(hide);
+          }
+          if (tz) {
+            usePrivacy.getState().setDisplayTz(tz);
+          }
           const accounts = await realRepos.accounts.list();
           const active =
             stored && accounts.some((a) => a.id === stored) ? stored : (accounts[0]?.id ?? null);

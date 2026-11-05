@@ -13,6 +13,7 @@ let demoDb: Db | null = null;
 function makeRepos(db: Db, mode: 'real' | 'demo'): Repos {
   const deps = { ids: expoIds, clock: systemClock };
   return {
+    db,
     accounts: createAccountsRepo(db, deps),
     trades: createTradesRepo(db, deps),
     tags: createTagsRepo(db, deps),

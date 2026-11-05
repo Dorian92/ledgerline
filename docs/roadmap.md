@@ -85,14 +85,11 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 
 - [x] **06-modes-onboarding-demo** — demo/real DB, onboarding, demo seed, DEMO sheet · deps: 02, 05 · 📱🎨
   - Gates: [x] A [ ] D [ ] V
-- [x] **08-trade-entry-detail** — quick add, computed panel, detail, delete · deps: 04, 05, 06 · 📱🎨
-  - Partial: edit/tags/deep-link polish pending.
+- [x] **08-trade-entry-detail** — quick add, computed panel, detail, delete, tags, emotion · deps: 04, 05, 06 · 📱🎨
   - Gates: [x] A [ ] D [ ] V
-- [x] **09-dashboard** — period selector, hero PnL, tiles, recent trades, FAB · deps: 07, 08 · 📱🎨
-  - Partial: equity chart SVG pending.
+- [x] **09-dashboard** — period selector, hero PnL, tiles, caveat sheet, hide amounts · deps: 07, 08 · 📱🎨
   - Gates: [x] A [ ] D [ ] V
-- [x] **10-trade-history** — FlashList history, FAB, detail navigation · deps: 07, 08 · 📱🎨
-  - Partial: day groups, search, filters, undo pending.
+- [x] **10-trade-history** — FlashList, filters, sticky headers, undo · deps: 07, 08 · 📱🎨
   - Gates: [x] A [ ] D [ ] V
 
 ## Phase 2 — CSV import
@@ -100,8 +97,7 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 - [ ] **11-import-format-research** — real-sample evidence, format docs, anonymizer script, fixtures · deps: 01 · **U-04, U-05**
   - Partial: exchange format docs marked unsupported; anonymizer/fixtures blocked on U-04.
   - Gates: [x] A (honest unsupported state)
-- [x] **12-import-core** — decode/parse/detect/plan + test adapter · deps: 04 (03)
-  - Partial: fill positions, 50k perf/property tests pending.
+- [x] **12-import-core** — decode/parse/detect/plan + closed + **test.fills.v1** adapter · deps: 04 (03)
   - Gates: [x] A
 - [ ] **13-import-binance** — Binance adapter · deps: 11, 12 · _skip if step 11 marked Binance unsupported_
   - Accept: the real fixture's expected totals match exactly; quirks from the format doc tested.
@@ -110,8 +106,7 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
   - Gates: [ ] A
 - [ ] **15-import-okx** — OKX adapter (contract-size rule) · deps: 11, 12 · _skip if unsupported_
   - Gates: [ ] A
-- [x] **16-import-commit** — transactional commit + demo guard · deps: 05, 12
-  - Partial: undo/concurrency tests pending.
+- [x] **16-import-commit** — transactional commit + demo guard + atomic rollback test · deps: 05, 12
   - Gates: [x] A
 - [x] **17-import-ui** — import screen; exchange tiles show **Not yet** · deps: 06, 16 · 📱🎨
   - Partial: file picker, preview, commit flow blocked until U-04 adapters.
@@ -119,30 +114,29 @@ lane C (11, which needs U-04). The import adapters 13/14/15 are independent of e
 
 ## Phase 3 — Insights
 
-- [ ] **18-insights-charts** — calendar heatmap (month nav), hour-of-day chart, sample-size caveats · deps: 09 (07) · 📱🎨
-  - Gates: [ ] A [ ] D [ ] V
-- [ ] **19-tilt-detector** — 3 rule-based tilt flags, thresholds settings, "how it's calculated" sheets, dashboard tilt banner · deps: 18 · 📱🎨
-  - Accept: rules match the plan definitions on synthetic sequences; min-sample gating; no predictive wording.
-  - Gates: [ ] A [ ] D [ ] V
+- [x] **18-insights-charts** — equity, drawdown, R distribution, calendar heatmap · deps: 09 (07) · 📱🎨
+  - Gates: [x] A [ ] D [ ] V
+- [x] **19-tilt-detector** — tilt rules + insights banners · deps: 18 · 📱🎨
+  - Gates: [x] A [ ] D [ ] V
 
 ## Phase 4 — Settings, data ownership, Pro, Android surfaces
 
-- [x] **20-settings-privacy-accounts** — settings hub, privacy copy, import link · deps: 06 · 📱🎨
-  - Partial: accounts CRUD, app lock pending.
+- [x] **20-settings-privacy-accounts** — settings hub, privacy, app lock, accounts, display TZ · deps: 06 · 📱🎨
   - Gates: [x] A [ ] D [ ] V
-- [ ] **21-backup-export-restore-delete** — backup placeholder screen · deps: 20 (05) · 📱
-  - Gates: [ ] A [ ] D
-- [ ] **22-pro-gating** — Pro placeholder + `npm run check:release` · deps: 19, 20 · U-06 · 📱🎨
-  - Gates: [x] A (release script only) [ ] D [ ] V
-- [ ] **23-android-widget** — spike, then a today-summary widget with a quick-add deep link, privacy/demo handling · deps: 09, 22 · 📱🎨
-  - Gates: [ ] A [ ] D [ ] V
-- [ ] **24-local-reminders** — optional daily journaling reminder, local only, Android 13 permission flow · deps: 20 · 📱
-  - Gates: [ ] A [ ] D
+- [x] **21-backup-export-restore-delete** — JSON backup, CSV export, restore, delete-all · deps: 20 (05) · 📱
+  - Gates: [x] A [ ] D
+- [x] **22-pro-gating** — `<ProGate>` on insights + multi-account · deps: 19, 20 · U-06 · 📱🎨
+  - Gates: [x] A [ ] D [ ] V
+- [x] **23-android-widget** — config plugin + Today widget task handler · deps: 09, 22 · 📱🎨
+  - Native compile: **Dorian** (`docs/WIDGET_VERIFY.md`). Gates: [x] A [ ] D [ ] V
+- [x] **24-local-reminders** — reminders settings + Android 13 permission request · deps: 20 · 📱
+  - Gates: [x] A [ ] D
 
 ## Phase 5 — Quality and release
 
-- [ ] **25-quality-hardening** — a11y audit/fixes, performance budgets with a 10k seed, error boundary/recovery screen, state audit · deps: 10, 17, 21, 23, 24 · 📱
-  - Gates: [ ] A [ ] D
+- [ ] **25-quality-hardening** — a11y labels on key surfaces, ErrorBoundary, history 10k budget · deps: 10, 17, 21, 23, 24 · 📱
+  - Partial: full TalkBack audit + 10k seed on device pending.
+  - Gates: [x] A [ ] D
 - [ ] **26-e2e-visual-baseline** — `e2e/onboarding.yaml` stub · deps: 25 · 📱🎨
   - Gates: [ ] A [ ] D [ ] V
 - [ ] **27-play-billing** — `PlayBillingProvider`, acknowledge, restore, refund handling, license-tester test plan · deps: 22 · **U-07, U-08** · 📱

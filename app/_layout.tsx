@@ -16,8 +16,13 @@ import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+import { registerWidgetTaskHandler } from 'react-native-android-widget';
+
 import { DbProvider } from '@/data/DbProvider';
 import { ErrorBoundary } from '@/ui/ErrorBoundary';
+import { widgetTaskHandler } from '@/widgets/widgetTaskHandler';
+
+registerWidgetTaskHandler(widgetTaskHandler);
 
 SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();

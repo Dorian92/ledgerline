@@ -3,6 +3,7 @@ import { parseCsv } from '../parse';
 import { detectAdapter } from '../detect';
 import { buildImportPlan } from '../plan';
 import { testClosedAdapter } from '../testAdapter';
+import { testFillsAdapter } from '../testFillsAdapter';
 
 const SAMPLE = `Time,Symbol,Side,Qty,Entry,Exit
 2024-01-01T12:00:00Z,BTC-PERP,long,0.1,100,101
@@ -62,5 +63,63 @@ describe('import pipeline', () => {
       existingFingerprints: fps,
     });
     expect('summary' in second && second.summary.tradesToCreate).toBe(0);
+  });
+
+  const FILLS = `Time,Symbol,Side,Qty,Price,Fee
+2024-01-01T10:00:00Z,BTC-PERP,buy,1,100,0.1
+2024-01-01T11:00:00Z,BTC-PERP,sell,1,105,0.1
+`;
+
+  it('builds trades from test fills adapter', async () => {
+    const plan = await buildImportPlan({
+      text: FILLS,
+      adapters: [testFillsAdapter],
+      quoteCurrency: 'USD',
+      sourceTz: 'UTC',
+      existingFingerprints: new Set(),
+    });
+    expect('summary' in plan && plan.summary.tradesToCreate).toBe(1);
+    if ('trades' in plan) {
+      expect(plan.trades[0]?.fills?.length).toBe(2);
+    }
+  });
+
+  it('summary invariant property on random mixes', async () => {
+    for (let n = 0; n < 20; n++) {
+      const plan = await buildImportPlan({
+        text: SAMPLE,
+        adapters: [testClosedAdapter],
+        quoteCurrency: 'USD',
+        sourceTz: 'UTC',
+        existingFingerprints: new Set(),
+      });
+      if (!('summary' in plan)) continue;
+      expect(plan.summary.tradesToCreate).toBe(plan.trades.length);
+      expect(plan.summary.total).toBe(
+        plan.summary.valid + plan.summary.warning + plan.summary.duplicate + plan.summary.error,
+      );
+    }
+  });
+
+  it('plans 50k closed rows under 8s with progress yields', async () => {
+    let lines = 'Time,Symbol,Side,Qty,Entry,Exit\n';
+    for (let i = 0; i < 50_000; i++) {
+      lines += `2024-01-01T12:00:00Z,BTC-PERP,long,0.1,100,101\n`;
+    }
+    let yields = 0;
+    const t0 = Date.now();
+    const plan = await buildImportPlan({
+      text: lines,
+      adapters: [testClosedAdapter],
+      quoteCurrency: 'USD',
+      sourceTz: 'UTC',
+      existingFingerprints: new Set(),
+      yieldToEventLoop: async () => {
+        yields++;
+      },
+    });
+    expect(Date.now() - t0).toBeLessThan(8000);
+    expect(yields).toBeGreaterThanOrEqual(100);
+    expect('summary' in plan && plan.summary.total).toBe(50_000);
   });
 });

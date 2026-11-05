@@ -8,6 +8,7 @@ import { useHistory, useUndoDeleteTrade } from '@/data/queries/useHistory';
 import { useDeleteTrade } from '@/data/queries/useTrades';
 import { useRepos } from '@/data/DbProvider';
 import type { HistoryFilter } from '@/domain/metrics/history';
+import { FilterSheet } from '@/features/trades/FilterSheet';
 import { useSession } from '@/state/session';
 import { TradeRow } from '@/ui/TradeRow';
 import { Text } from '@/ui/Text';
@@ -20,6 +21,7 @@ export default function TradesScreen() {
   const mode = useSession((s) => s.mode);
   const repos = useRepos();
   const [text, setText] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState<HistoryFilter>({});
   const activeFilter = useMemo(
     () => ({ ...filter, text: text.trim() || undefined }),
@@ -32,6 +34,10 @@ export default function TradesScreen() {
     row: NonNullable<Awaited<ReturnType<typeof repos.trades.get>>>;
     tagIds: string[];
   } | null>(null);
+
+  const stickyHeaderIndices = sections
+    .map((s, i) => (s.kind === 'header' ? i : -1))
+    .filter((i) => i >= 0);
 
   const onDelete = async (id: string) => {
     const row = await repos.trades.get(id);
@@ -61,15 +67,30 @@ export default function TradesScreen() {
         value={text}
         onChangeText={setText}
         style={styles.search}
+        accessibilityLabel="Search trades"
       />
       <View style={styles.chips}>
-        <Chip label="All" active={!filter.outcome} onPress={() => setFilter({})} />
+        <Chip
+          label="All"
+          active={!filter.outcome && !filter.direction}
+          onPress={() => setFilter({})}
+        />
         <Chip
           label="Losers"
           active={filter.outcome === 'loss'}
           onPress={() => setFilter({ outcome: 'loss' })}
         />
+        <Chip label="Filters" active={filterOpen} onPress={() => setFilterOpen(true)} />
       </View>
+      <FilterSheet
+        visible={filterOpen}
+        initial={filter}
+        onClose={() => setFilterOpen(false)}
+        onApply={(f) => {
+          setFilter(f);
+          setFilterOpen(false);
+        }}
+      />
       {pendingUndo ? (
         <Pressable
           style={styles.snack}
@@ -77,6 +98,7 @@ export default function TradesScreen() {
             await undo.mutateAsync(pendingUndo);
             setPendingUndo(null);
           }}
+          accessibilityRole="button"
         >
           <Text style={{ color: color.text }}>Trade deleted · Undo</Text>
         </Pressable>
@@ -86,6 +108,7 @@ export default function TradesScreen() {
       ) : (
         <FlashList
           data={sections}
+          stickyHeaderIndices={stickyHeaderIndices}
           contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 120 }}
           renderItem={({ item }) => {
             if (item.kind === 'header') {

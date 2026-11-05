@@ -7,6 +7,7 @@ import type {
 import type { createTradesRepo } from '@/data/repositories/trades';
 
 export type Repos = {
+  db: import('@/data/db/types').Db;
   accounts: ReturnType<typeof createAccountsRepo>;
   trades: ReturnType<typeof createTradesRepo>;
   tags: ReturnType<typeof createTagsRepo>;

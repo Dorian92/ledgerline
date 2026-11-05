@@ -2,16 +2,19 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 
 import { useRepos } from '@/data/DbProvider';
-import { hourOfDay, calendarMonth, computeSummary, periodRange } from '@/domain/metrics';
+import { calendarMonth, computeSummary, hourOfDay, periodRange } from '@/domain/metrics';
 import { detectTilt } from '@/domain/insights/tilt';
+import { ProGate, usePro } from '@/state/pro';
 import { EquityChart } from '@/ui/charts/EquityChart';
+import { CalendarHeatmap, DrawdownChart, RDistributionChart } from '@/ui/charts/InsightCharts';
 import { useSession } from '@/state/session';
+import { ButtonUi } from '@/ui/Button';
 import { ScreenHeader } from '@/ui/primitives';
 import { Text } from '@/ui/Text';
 import { color, space } from '@/ui/tokens';
 import { dec } from '@/domain/money/dec';
 
-export default function InsightsTab() {
+function InsightsBody() {
   const repos = useRepos();
   const accountId = useSession((s) => s.activeAccountId);
   const { data } = useQuery({
@@ -23,18 +26,30 @@ export default function InsightsTab() {
       const summary = computeSummary(rows as never, periodRange('ALL', Date.now(), tz), {
         startingBalance: dec('10000'),
       });
+      const cal = calendarMonth(
+        rows as never,
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        tz,
+      );
       return {
         summary,
         hours: hourOfDay(rows as never, tz),
-        cal: calendarMonth(rows as never, 2026, 10, tz),
+        cal,
         tilt: detectTilt(rows as never, tz),
+        rows,
       };
     },
   });
 
+  const calDays = data?.cal.days.map((d) => ({
+    dayKey: d.dayKey,
+    intensity: d.intensity,
+    net: d.net?.toString() ?? null,
+  }));
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <ScreenHeader title="Insights" />
+    <>
       {data?.tilt.map((t) => (
         <View key={t.id} style={styles.banner}>
           <Text variant="section">{t.title}</Text>
@@ -44,20 +59,42 @@ export default function InsightsTab() {
       <Text variant="caption">EQUITY</Text>
       <EquityChart points={data?.summary.equity ?? []} height={120} />
       <Text variant="caption" style={{ marginTop: space.lg }}>
-        HOUR OF DAY (opened)
+        DRAWDOWN
       </Text>
-      {data?.hours
-        .filter((h) => h.count > 0)
-        .slice(0, 6)
-        .map((h) => (
-          <Text key={h.hour} variant="monoSmall">
-            {h.hour}:00 · {h.count} trades · net {h.net.toFixed(2)}
-          </Text>
-        ))}
+      {data?.summary ? <DrawdownChart summary={data.summary} /> : null}
       <Text variant="caption" style={{ marginTop: space.lg }}>
-        CALENDAR · OCT 2026
+        R DISTRIBUTION
       </Text>
-      <Text variant="secondary">{data?.cal.total.toFixed(2)} net</Text>
+      <RDistributionChart
+        values={
+          (data?.rows as { r_multiple: string | null }[] | undefined)?.map((r) => ({
+            r: r.r_multiple ?? null,
+          })) ?? []
+        }
+      />
+      <Text variant="caption" style={{ marginTop: space.lg }}>
+        CALENDAR
+      </Text>
+      <CalendarHeatmap days={calDays ?? []} />
+    </>
+  );
+}
+
+export default function InsightsTab() {
+  const mockPurchase = usePro((s) => s.mockPurchase);
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <ScreenHeader title="Insights" />
+      <ProGate
+        fallback={
+          <View style={styles.paywall}>
+            <Text variant="secondary">Insights charts are part of Ledgerline Pro.</Text>
+            <ButtonUi title="Mock purchase" onPress={mockPurchase} />
+          </View>
+        }
+      >
+        <InsightsBody />
+      </ProGate>
     </ScrollView>
   );
 }
@@ -76,4 +113,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: space.sm,
   },
+  paywall: { gap: space.md, paddingVertical: space.xl },
 });

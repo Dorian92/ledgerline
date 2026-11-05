@@ -11,6 +11,8 @@ Planning and specs: [`docs/roadmap.md`](docs/roadmap.md).
 - Android Studio with SDK 34+ and an emulator (Pixel 7 profile recommended)
 - Maestro CLI (optional, for `e2e/` flows)
 
+**Windows + Pixel 6 emulator:** see [`docs/LOCAL_RUN.md`](docs/LOCAL_RUN.md).
+
 ## Commands
 
 ```bash

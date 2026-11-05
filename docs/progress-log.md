@@ -2,6 +2,12 @@
 
 One entry per step: date, step, commit SHA(s), gates run with results, deviations/decisions, follow-ups.
 
+## 2026-11-05 — steps 08–25 pass + LOCAL_RUN
+
+- Commit: (see `git rev-parse HEAD` on main after push).
+- Gate A: **19 suites / 65 tests** — fills adapter, 50k plan perf, import rollback, history 10k sections, insights charts, settings/backup/widget/reminders.
+- Added `docs/LOCAL_RUN.md`, `docs/WIDGET_VERIFY.md`.
+
 ## 2026-11-05 — steps 07–26 (continued)
 
 - Commits: `8f020ef` (07 metrics tests), `1e69e8c` (08–26 batch).

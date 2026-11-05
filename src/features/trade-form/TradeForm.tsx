@@ -20,6 +20,7 @@ import { Text } from '@/ui/Text';
 import { Segmented } from '@/ui/primitives';
 import { color, space } from '@/ui/tokens';
 
+import { SetupTagsField } from './SetupTagsField';
 import type { TradeFormValues } from './schema';
 
 export function TradeForm({
@@ -38,6 +39,8 @@ export function TradeForm({
   const [stop, setStop] = useState('68020');
   const [fees, setFees] = useState('4.10');
   const [emotion, setEmotion] = useState<'calm' | 'fomo' | 'revenge' | 'fear'>('calm');
+  const [tagIds, setTagIds] = useState<string[]>([]);
+  const [notes, setNotes] = useState('');
 
   const emotions: { id: typeof emotion; label: string }[] = [
     { id: 'calm', label: 'Calm' },
@@ -57,15 +60,16 @@ export function TradeForm({
       stop,
       fees,
       emotion,
+      tagIds,
       accountId,
       quoteAsset: 'USD',
     });
     if ('error' in input) return null;
     return computeTrade(input);
-  }, [accountId, symbol, direction, entry, exit, quantity, stop, fees, emotion]);
+  }, [accountId, symbol, direction, entry, exit, quantity, stop, fees, emotion, tagIds]);
 
   const save = () => {
-    onSubmit({ symbol, direction, entry, exit, quantity, stop, fees, notes: '', emotion });
+    onSubmit({ symbol, direction, entry, exit, quantity, stop, fees, notes, emotion, tagIds });
   };
 
   return (
@@ -103,6 +107,15 @@ export function TradeForm({
             </Pressable>
           ))}
         </View>
+        <SetupTagsField selected={tagIds} onChange={setTagIds} />
+        <Text variant="caption">NOTE</Text>
+        <TextInput
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          style={[styles.input, { minHeight: 80 }]}
+          maxLength={4000}
+        />
         {derived?.netPnl ? (
           <Card style={styles.computed}>
             <Text variant="caption">COMPUTED · LIVE</Text>
