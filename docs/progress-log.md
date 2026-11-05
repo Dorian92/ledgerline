@@ -6,7 +6,7 @@ One entry per step: date, step, commit SHA(s), gates run with results, deviation
 
 - Review doc: `docs/reviews/full-review-1.md`.
 - Fixes: migration v2 fills, widget snapshot, Pro demo override, insights TZ, accounts CRUD UI.
-- Gate A: **20 suites / 70 tests**.
+- Gate A: **20 suites / 70 tests** on `b562b65`.
 
 ## 2026-11-05 — steps 08–25 pass + LOCAL_RUN
 
