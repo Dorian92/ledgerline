@@ -30,6 +30,7 @@ export default function ImportIndexScreen() {
   const router = useRouter();
   const guard = useRealModeOnly();
   const repos = useRepos();
+  const mode = useSession((s) => s.mode);
   const accountId = useSession((s) => s.activeAccountId);
   const setDraft = useImportDraft((s) => s.setDraft);
 
@@ -64,11 +65,30 @@ export default function ImportIndexScreen() {
   };
 
   if (!guard.allowed) {
+    if (mode === 'demo') {
+      return (
+        <DemoGuardPanel
+          title="Import trades"
+          body={guard.reason ?? 'Imports and backups go into your journal, not demo data.'}
+        />
+      );
+    }
     return (
-      <DemoGuardPanel
-        title="Import trades"
-        body={guard.reason ?? 'Import requires a real journal account.'}
-      />
+      <NavScreen title="Import trades">
+        <Text variant="secondary">{guard.reason ?? 'Import is unavailable right now.'}</Text>
+        {mode === 'real' && !accountId ? (
+          <>
+            <ButtonUi
+              title="Start my journal"
+              onPress={() => router.push('/(onboarding)/create-account')}
+              style={{ marginTop: space.lg }}
+            />
+            <ButtonUi title="Back" variant="secondary" onPress={() => router.back()} />
+          </>
+        ) : (
+          <ButtonUi title="Back" variant="secondary" onPress={() => router.back()} />
+        )}
+      </NavScreen>
     );
   }
 

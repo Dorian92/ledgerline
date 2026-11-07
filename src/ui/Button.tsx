@@ -8,7 +8,7 @@ export function ButtonUi({
   variant = 'primary',
   disabled,
   ...rest
-}: PressableProps & { title: string; variant?: 'primary' | 'secondary' }) {
+}: PressableProps & { title: string; variant?: 'primary' | 'secondary' | 'destructive' }) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -16,13 +16,17 @@ export function ButtonUi({
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
-        variant === 'primary' ? styles.primary : styles.secondary,
+        variant === 'primary'
+          ? styles.primary
+          : variant === 'destructive'
+            ? styles.destructive
+            : styles.secondary,
         disabled && styles.disabled,
         pressed && styles.pressed,
       ]}
       {...rest}
     >
-      <Text style={styles.label}>{title}</Text>
+      <Text style={[styles.label, variant === 'destructive' && { color: color.red }]}>{title}</Text>
     </Pressable>
   );
 }
@@ -37,6 +41,7 @@ const styles = StyleSheet.create({
   },
   primary: { backgroundColor: color.violet },
   secondary: { borderWidth: 1, borderColor: color.border },
+  destructive: { borderWidth: 1, borderColor: color.red, backgroundColor: '#2a1215' },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.85 },
   label: { color: color.text, fontWeight: '600' },

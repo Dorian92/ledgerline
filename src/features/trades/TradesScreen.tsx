@@ -137,7 +137,7 @@ export default function TradesScreen() {
           stickyHeaderIndices={stickyHeaderIndices}
           contentContainerStyle={{
             paddingHorizontal: space.lg,
-            paddingBottom: insets.bottom + 120,
+            paddingBottom: insets.bottom + 168,
           }}
           renderItem={({ item }) => {
             if (item.kind === 'header') {
@@ -171,6 +171,7 @@ export default function TradesScreen() {
                 netPnl={t.net_pnl ?? '0'}
                 rMultiple={t.r_multiple}
                 hidden={hideAmounts}
+                reserveFabSpace
                 onPress={() => router.push(`/trade/${t.id}`)}
                 onLongPress={() => onDelete(t.id)}
               />

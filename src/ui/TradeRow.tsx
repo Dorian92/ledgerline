@@ -15,6 +15,7 @@ export function TradeRow({
   hidden,
   onPress,
   onLongPress,
+  reserveFabSpace,
 }: {
   symbol: string;
   direction: 'long' | 'short';
@@ -24,10 +25,12 @@ export function TradeRow({
   hidden?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
+  /** Keeps PnL clear of the floating add button on tab screens. */
+  reserveFabSpace?: boolean;
 }) {
   const net = fromCanonical(netPnl);
   const body = (
-    <View style={styles.row}>
+    <View style={[styles.row, reserveFabSpace && styles.rowFabInset]}>
       <View style={{ flex: 1 }}>
         <View style={styles.top}>
           <Text variant="body" style={{ fontWeight: '600' }}>
@@ -46,9 +49,7 @@ export function TradeRow({
         >
           {formatMoney(net, 'USD', { sign: 'always', compact: true, hidden })}
         </Text>
-        <Text variant="monoSmall">
-          {hidden ? '••••' : rMultiple ? formatR(fromCanonical(rMultiple)) : '—'}
-        </Text>
+        <Text variant="monoSmall">{rMultiple ? formatR(fromCanonical(rMultiple)) : '—'}</Text>
       </View>
     </View>
   );
@@ -71,4 +72,5 @@ const styles = StyleSheet.create({
   },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   right: { alignItems: 'flex-end' },
+  rowFabInset: { paddingRight: 76 },
 });

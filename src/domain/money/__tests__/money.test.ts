@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 
 import { fromCanonical, toCanonical } from '../canonical';
 import { dec } from '../dec';
-import { formatMoney, formatR, formatRatioAsPercent } from '../format';
+import { formatMoney, formatPriceForDisplay, formatR, formatRatioAsPercent } from '../format';
 import { parseUserDecimal } from '../parse';
 
 describe('canonical', () => {
@@ -34,6 +34,12 @@ describe('formatMoney §8', () => {
 
   it('formatR null', () => {
     expect(formatR(null)).toBe('—');
+  });
+});
+
+describe('formatPriceForDisplay', () => {
+  it('caps excessive fractional digits', () => {
+    expect(formatPriceForDisplay(dec('103.02002858370543'))).toBe('103.02002858');
   });
 });
 

@@ -86,7 +86,7 @@ export default function DashboardScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
-          { paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 140 },
+          { paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 168 },
         ]}
       >
         <ScreenHeader
@@ -126,9 +126,9 @@ export default function DashboardScreen() {
               <Text variant="secondary">{vm?.subline} · About stats</Text>
             </Pressable>
             <View style={styles.tiles}>
-              <StatTile label="WIN RATE" value={vm?.winRate ?? '—'} hidden={hideAmounts} />
+              <StatTile label="WIN RATE" value={vm?.winRate ?? '—'} />
               <StatTile label="AVG R" value={s.avgR ? formatR(s.avgR) : '—'} />
-              <StatTile label="MAX DD" value={vm?.maxDd ?? '—'} hidden={hideAmounts} />
+              <StatTile label="MAX DD" value={vm?.maxDd ?? '—'} />
             </View>
             <Card style={{ marginTop: space.lg }}>
               <Text variant="caption">EQUITY CURVE</Text>
@@ -157,6 +157,7 @@ export default function DashboardScreen() {
                   netPnl={t.net_pnl as string}
                   rMultiple={(t.r_multiple as string) ?? null}
                   hidden={hideAmounts}
+                  reserveFabSpace
                   onPress={() => router.push(`/trade/${t.id}`)}
                 />
               ))}

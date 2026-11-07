@@ -91,7 +91,7 @@ export function RDistributionChart({
             />
           </View>
           <Text variant="monoSmall" style={styles.histCount}>
-            {hidden ? '•' : c}
+            {c}
           </Text>
         </View>
       ))}
@@ -99,7 +99,26 @@ export function RDistributionChart({
   );
 }
 
-const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+export function buildCalendarCells<T extends { dayKey: string }>(
+  days: T[],
+  firstWeekday: number,
+): (T | null)[] {
+  const cells: (T | null)[] = [...Array<null>(firstWeekday).fill(null), ...days];
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+  return cells;
+}
+
+export const WEEKDAY_LABELS = [
+  { key: 'mon', label: 'M' },
+  { key: 'tue', label: 'T' },
+  { key: 'wed', label: 'W' },
+  { key: 'thu', label: 'T' },
+  { key: 'fri', label: 'F' },
+  { key: 'sat', label: 'S' },
+  { key: 'sun', label: 'S' },
+] as const;
 
 export function CalendarHeatmap({
   days,
@@ -117,10 +136,7 @@ export function CalendarHeatmap({
   firstWeekday?: number;
   hidden?: boolean;
 }) {
-  const pad = firstWeekday ?? 0;
-  type Cell = (typeof days)[number];
-  const cells: (Cell | null)[] = [...Array<null>(pad).fill(null), ...days];
-  while (cells.length % 7 !== 0) cells.push(null);
+  const cells = buildCalendarCells(days, firstWeekday ?? 0);
 
   const cellColor = (d: (typeof days)[0]) => {
     if (d.net === null) return color.border;
@@ -141,9 +157,9 @@ export function CalendarHeatmap({
         </Text>
       ) : null}
       <View style={styles.weekdayRow}>
-        {WEEKDAYS.map((w) => (
-          <Text key={w} variant="caption" style={styles.weekday}>
-            {w}
+        {WEEKDAY_LABELS.map((w) => (
+          <Text key={w.key} variant="caption" style={styles.weekday}>
+            {w.label}
           </Text>
         ))}
       </View>
@@ -184,17 +200,17 @@ const styles = StyleSheet.create({
   },
   histCount: { width: 24, textAlign: 'right' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', width: '100%' },
-  weekdayRow: { flexDirection: 'row', marginBottom: space.xs },
-  weekday: { width: `${100 / 7}%`, textAlign: 'center' },
+  weekdayRow: { flexDirection: 'row', marginBottom: space.xs, width: '100%' },
+  weekday: { flexBasis: `${100 / 7}%`, maxWidth: `${100 / 7}%`, textAlign: 'center' },
   cell: {
-    width: `${100 / 7}%`,
+    flexBasis: `${100 / 7}%`,
+    maxWidth: `${100 / 7}%`,
     aspectRatio: 1,
     borderRadius: 4,
     marginBottom: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    maxWidth: 44,
   },
-  cellPad: { width: `${100 / 7}%`, aspectRatio: 1, maxWidth: 44 },
+  cellPad: { flexBasis: `${100 / 7}%`, maxWidth: `${100 / 7}%`, aspectRatio: 1 },
   cellDay: { fontSize: 10, color: color.text },
 });

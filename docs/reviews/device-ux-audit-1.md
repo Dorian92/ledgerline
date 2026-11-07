@@ -2,7 +2,9 @@
 
 **Date:** 7 November 2026 (device capture ~17:11–17:17 Europe/Belgrade)  
 **Baseline build:** `main` @ `206338e` (Pixel_6 emulator, 1080×2400)  
-**Corrections landed:** `main` after UX pass (see git SHA in release notes below)  
+**First correction SHA:** `3ebff76`  
+**Retest:** Pixel_6 on `3ebff76` (~17:24–17:31); findings in retest matrix below  
+**Second correction SHA:** see git `main` after push (edit hydration, calendar grid, privacy policy, FAB inset)  
 **Scope:** Observed UI/navigation on device; code fixes and regression tests in-repo. No on-device re-verification from the cloud VM.
 
 Evidence PNGs (audit): `ledgerline-ux-audit/` in repo attachments. Approved references: `ledgerline-design/1-dashboard.png`, `3-quick-add.png`, `5-insights.png`.
@@ -11,23 +13,58 @@ Evidence PNGs (audit): `ledgerline-ux-audit/` in repo attachments. Approved refe
 
 ## Fix tracking (UX-01 … UX-15)
 
-| ID | Severity | Summary | Status | Verification |
-| --- | --- | --- | --- | --- |
-| UX-01 | High | Back/Close on nested routes; modal close | **Fixed** (code) | Retest: trade detail/edit/new, Settings sub-screens, Import/Backup/Pro/Reminders/Accounts, onboarding create |
-| UX-02 | High | Hide amounts across UI + a11y/charts | **Fixed** (code) | Retest: toggle Privacy → Home/Trades/Insights; TalkBack labels on equity/calendar |
-| UX-03 | High | Cancel onboarding must not strand unset real mode | **Fixed** (code) | Retest: Demo → Start journal → Back without create; expect demo dashboard |
-| UX-04 | High | Trades day totals format + loss color | **Fixed** (code) | Retest: Trades history headers (bounded currency, red negatives) |
-| UX-05 | High | Insights histogram/calendar bounds + loss color | **Fixed** (code) | Retest: R distribution width; 7-column calendar; drawdown label units |
-| UX-06 | High | Accounts new-name input height | **Fixed** (code) | Retest: Settings → Manage accounts |
-| UX-07 | Medium | Demo %/win rate/R semantics | **Fixed** (code + tests) | Retest: dashboard 7D/30D/YTD; **re-seed demo** for new trade mix (DB not wiped) |
-| UX-08 | Medium | Trade detail metadata + delete styling | **Fixed** (code) | Retest: open BTC-PERP detail; delete confirm |
-| UX-09 | Medium | Form hierarchy, Cancel, 48dp targets | **Partial** | Retest: Quick add two-column, Cancel, computed block; keyboard occlusion not re-tested |
-| UX-10 | Medium | Demo Import/Backup dead-ends | **Fixed** (code) | Retest: demo → Import/Backup CTAs + Back |
-| UX-11 | Medium | Import without account | **Fixed** (code) | Retest: cancel create → Import synthetic; preview shows guard |
-| UX-12 | Low/Med | Search empty copy | **Fixed** (code) | Retest: search `UXNORESULT` |
-| UX-13 | Medium | Dashboard layout vs mock | **Partial** | Retest: cards, See all, FAB inset, period pills after headline |
-| UX-14 | Medium | Safe area on scroll/sheets | **Fixed** (code) | Retest: Insights top clip; caveat sheet bottom inset |
-| UX-15 | Low/Med | Pro/mock billing copy | **Fixed** (code) | Retest: Pro screen; mock unlock only in `__DEV__` |
+| ID    | Severity | Summary                                           | Status                   | Verification                                                                                                 |
+| ----- | -------- | ------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| UX-01 | High     | Back/Close on nested routes; modal close          | **Fixed** (code)         | Retest: trade detail/edit/new, Settings sub-screens, Import/Backup/Pro/Reminders/Accounts, onboarding create |
+| UX-02 | High     | Hide amounts across UI + a11y/charts              | **Fixed** (code)         | Retest: toggle Privacy → Home/Trades/Insights; TalkBack labels on equity/calendar                            |
+| UX-03 | High     | Cancel onboarding must not strand unset real mode | **Fixed** (code)         | Retest: Demo → Start journal → Back without create; expect demo dashboard                                    |
+| UX-04 | High     | Trades day totals format + loss color             | **Fixed** (code)         | Retest: Trades history headers (bounded currency, red negatives)                                             |
+| UX-05 | High     | Insights histogram/calendar bounds + loss color   | **Fixed** (code)         | Retest: R distribution width; 7-column calendar; drawdown label units                                        |
+| UX-06 | High     | Accounts new-name input height                    | **Fixed** (code)         | Retest: Settings → Manage accounts                                                                           |
+| UX-07 | Medium   | Demo %/win rate/R semantics                       | **Fixed** (code + tests) | Retest: dashboard 7D/30D/YTD; **re-seed demo** for new trade mix (DB not wiped)                              |
+| UX-08 | Medium   | Trade detail metadata + delete styling            | **Fixed** (code)         | Retest: open BTC-PERP detail; delete confirm                                                                 |
+| UX-09 | Medium   | Form hierarchy, Cancel, 48dp targets              | **Partial**              | Retest: Quick add two-column, Cancel, computed block; keyboard occlusion not re-tested                       |
+| UX-10 | Medium   | Demo Import/Backup dead-ends                      | **Fixed** (code)         | Retest: demo → Import/Backup CTAs + Back                                                                     |
+| UX-11 | Medium   | Import without account                            | **Fixed** (code)         | Retest: cancel create → Import synthetic; preview shows guard                                                |
+| UX-12 | Low/Med  | Search empty copy                                 | **Fixed** (code)         | Retest: search `UXNORESULT`                                                                                  |
+| UX-13 | Medium   | Dashboard layout vs mock                          | **Partial**              | Retest: cards, See all, FAB inset, period pills after headline                                               |
+| UX-14 | Medium   | Safe area on scroll/sheets                        | **Fixed** (code)         | Retest: Insights top clip; caveat sheet bottom inset                                                         |
+| UX-15 | Low/Med  | Pro/mock billing copy                             | **Fixed** (code)         | Retest: Pro screen; mock unlock only in `__DEV__`                                                            |
+
+---
+
+## Retest on `3ebff76` (device observations)
+
+| ID    | Retest                                                     | Follow-up in pass 2                                               |
+| ----- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| UX-01 | **PASS** (Back/Close)                                      | —                                                                 |
+| UX-02 | **PARTIAL** — win rate masked but R/return visible         | **Fixed:** money-only hide policy documented; ratios stay visible |
+| UX-03 | **PASS**                                                   | —                                                                 |
+| UX-04 | **PASS** formatting; headings still edge-aligned           | Low priority gutter                                               |
+| UX-05 | **FAIL** — 8 calendar columns + duplicate key `T` LogBox   | **Fixed:** 7-column flex grid, unique weekday keys, tests         |
+| UX-08 | **FAIL** — Edit showed BTC defaults not selected SOL trade | **Fixed:** `tradeInputToFormValues` + not-found guard + tests     |
+| UX-13 | **FAIL** — FAB over PnL on Home/Trades                     | **Fixed:** row inset + scroll padding                             |
+| UX-14 | **FAIL** — Insights scrolled under status bar              | **Fixed:** outer safe-area wrapper                                |
+| UX-11 | Partial — demo copy on real no-account Import              | **Fixed:** demo-only `DemoGuardPanel`                             |
+
+### Privacy policy (Hide amounts)
+
+| Kind                   | Examples                                                            | When hidden                              |
+| ---------------------- | ------------------------------------------------------------------- | ---------------------------------------- |
+| **Currency**           | Net PnL, fees, equity endpoints, calendar day $, trade row $        | Masked (`••••`) in UI + a11y where wired |
+| **Performance ratios** | Win rate %, return %, max DD %, per-trade **R**, R histogram counts | **Remain visible** (not balances)        |
+
+**Device checklist (hidden mode):** Home headline/equity/recent $ masked; AVG R / return % / win rate visible; Trades row $ masked, **R visible**; Insights drawdown $ labels masked, R distribution counts visible; TalkBack on calendar days does not speak dollar PnL when hidden.
+
+---
+
+## Regression findings (pass 2)
+
+| #    | Issue                         | Root cause (code)                                                           | Fix                                                |
+| ---- | ----------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------- |
+| R-01 | Edit ≠ detail trade           | `TradeForm` hardcoded quick-add defaults; edit never passed `initialValues` | Hydrate from `getInput`; block save when not found |
+| R-02 | Calendar 8-wide rows + LogBox | `maxWidth: 44` on 14% cells fit 8 per row; duplicate `key={w}` for Tue/Thu  | `flexBasis` 1/7 width; `WEEKDAY_LABELS[].key`      |
+| R-03 | Inconsistent hide             | `StatTile hidden` on win rate %; R hidden on rows                           | Money-only policy                                  |
 
 ---
 
@@ -87,7 +124,7 @@ See uploaded `findings_f165.md` for full prose and filenames.
 
 ## Automated verification (VM)
 
-- `npm run check` — 20 suites, **74** tests (added formatting, guards, demo, history display).
+- `npm run check` — 22 suites (pass 2 adds map + calendar tests); count at release SHA.
 - `npm run prebuild` — Android prebuild **OK** (icons/assets verified via `verify:assets`).
 
 ---

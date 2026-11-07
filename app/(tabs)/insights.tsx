@@ -94,37 +94,40 @@ export default function InsightsTab() {
   const insets = useSafeAreaInsets();
   const hideAmounts = usePrivacy((s) => s.hideAmounts);
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 100 },
-      ]}
-    >
-      <ScreenHeader title="Insights" />
-      <ProGate
-        fallback={
-          <View style={styles.paywall}>
-            <Text variant="secondary">Insights charts are part of Ledgerline Pro.</Text>
-            {__DEV__ ? (
-              <ButtonUi title="Unlock Pro (dev mock)" onPress={() => mockPurchase(repos)} />
-            ) : (
-              <Text variant="secondary">Play Billing is not enabled in this build.</Text>
-            )}
-          </View>
-        }
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { paddingTop: space.md, paddingBottom: insets.bottom + 108 },
+        ]}
       >
-        <InsightsBody />
-        {hideAmounts ? (
-          <Text variant="caption" style={{ marginTop: space.md }}>
-            Amounts hidden — charts show shape only.
-          </Text>
-        ) : null}
-      </ProGate>
-    </ScrollView>
+        <ScreenHeader title="Insights" />
+        <ProGate
+          fallback={
+            <View style={styles.paywall}>
+              <Text variant="secondary">Insights charts are part of Ledgerline Pro.</Text>
+              {__DEV__ ? (
+                <ButtonUi title="Unlock Pro (dev mock)" onPress={() => mockPurchase(repos)} />
+              ) : (
+                <Text variant="secondary">Play Billing is not enabled in this build.</Text>
+              )}
+            </View>
+          }
+        >
+          <InsightsBody />
+          {hideAmounts ? (
+            <Text variant="caption" style={{ marginTop: space.md }}>
+              Amounts hidden — charts show shape only.
+            </Text>
+          ) : null}
+        </ProGate>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: color.bg },
   container: {
     paddingHorizontal: space.lg,
     backgroundColor: color.bg,

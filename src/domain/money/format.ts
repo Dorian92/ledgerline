@@ -53,6 +53,18 @@ export function formatPrice(d: Dec): string {
   return s;
 }
 
+/** Bounded display for inputs and detail rows (avoids full canonical precision). */
+export function formatPriceForDisplay(d: Dec, maxDp = 8): string {
+  let s = d.toDecimalPlaces(maxDp, ROUND_HALF_EVEN).toFixed(maxDp);
+  if (s.includes('.')) {
+    s = s.replace(/\.?0+$/, '');
+  }
+  if (s === '-0') {
+    return '0';
+  }
+  return s;
+}
+
 export function formatQty(d: Dec): string {
   return formatPrice(d);
 }

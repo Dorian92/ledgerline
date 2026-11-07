@@ -57,7 +57,9 @@ export default function PrivacyScreen() {
         <Switch value={hideAmounts} onValueChange={toggleHide} accessibilityLabel="Hide amounts" />
       </View>
       <Text variant="caption">
-        Masks currency across dashboards, lists, charts, and screen reader labels.
+        Hides currency (PnL, fees, equity levels, calendar dollars) in UI and screen reader labels.
+        Performance ratios (win rate, return %, R multiples, max drawdown %) stay visible — they are
+        not balances.
       </Text>
       <View style={styles.row}>
         <Text>App lock {canLock ? '' : '(unavailable)'}</Text>

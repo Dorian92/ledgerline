@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+
+import { usePrivacy } from '@/state/privacy';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -23,26 +25,48 @@ import { color, space } from '@/ui/tokens';
 import { SetupTagsField } from './SetupTagsField';
 import type { TradeFormValues } from './schema';
 
+const QUICK_ADD_DEFAULTS: TradeFormValues = {
+  symbol: 'BTC-PERP',
+  direction: 'long',
+  entry: '68412.5',
+  exit: '69240',
+  quantity: '0.15',
+  stop: '68020',
+  fees: '4.10',
+  emotion: 'calm',
+  tagIds: [],
+  notes: '',
+};
+
 export function TradeForm({
   onSubmit,
   submitting,
   onCancel,
+  initialValues,
+  formKey,
 }: {
   onSubmit: (values: TradeFormValues) => void;
   submitting?: boolean;
   onCancel?: () => void;
+  /** When set, form must not show quick-add defaults (edit mode). */
+  initialValues?: TradeFormValues;
+  formKey?: string;
 }) {
   const accountId = useSession((s) => s.activeAccountId);
-  const [symbol, setSymbol] = useState('BTC-PERP');
-  const [direction, setDirection] = useState<'long' | 'short'>('long');
-  const [entry, setEntry] = useState('68412.5');
-  const [exit, setExit] = useState('69240');
-  const [quantity, setQuantity] = useState('0.15');
-  const [stop, setStop] = useState('68020');
-  const [fees, setFees] = useState('4.10');
-  const [emotion, setEmotion] = useState<'calm' | 'fomo' | 'revenge' | 'fear'>('calm');
-  const [tagIds, setTagIds] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
+  const hideAmounts = usePrivacy((s) => s.hideAmounts);
+  const seed = initialValues ?? QUICK_ADD_DEFAULTS;
+  const [symbol, setSymbol] = useState(seed.symbol);
+  const [direction, setDirection] = useState<'long' | 'short'>(seed.direction);
+  const [entry, setEntry] = useState(seed.entry);
+  const [exit, setExit] = useState(seed.exit ?? '');
+  const [quantity, setQuantity] = useState(seed.quantity);
+  const [stop, setStop] = useState(seed.stop ?? '');
+  const [fees, setFees] = useState(seed.fees ?? '');
+  const [emotion, setEmotion] = useState<'calm' | 'fomo' | 'revenge' | 'fear'>(
+    seed.emotion ?? 'calm',
+  );
+  const [tagIds, setTagIds] = useState<string[]>(seed.tagIds ?? []);
+  const [notes, setNotes] = useState(seed.notes ?? '');
 
   const emotions: { id: typeof emotion; label: string }[] = [
     { id: 'calm', label: 'Calm' },
@@ -76,6 +100,7 @@ export function TradeForm({
 
   return (
     <KeyboardAvoidingView
+      key={formKey}
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
@@ -125,7 +150,7 @@ export function TradeForm({
         {derived?.netPnl ? (
           <Card style={styles.computed}>
             <Text variant="caption">COMPUTED · LIVE</Text>
-            <Money amount={derived.netPnl} currency="USD" variant="hero" />
+            <Money amount={derived.netPnl} currency="USD" variant="hero" hidden={hideAmounts} />
             <Text variant="mono">{derived.rMultiple ? formatR(derived.rMultiple) : 'R —'}</Text>
           </Card>
         ) : null}

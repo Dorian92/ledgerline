@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRepos } from '@/data/DbProvider';
 import { useDeleteTrade } from '@/data/queries/useTrades';
 import { fromCanonical } from '@/domain/money/canonical';
-import { formatMoney, formatPrice, formatQty, formatR } from '@/domain/money/format';
+import { formatMoney, formatPriceForDisplay, formatR } from '@/domain/money/format';
 import { usePrivacy } from '@/state/privacy';
 import { Money } from '@/ui/Money';
 import { ButtonUi } from '@/ui/Button';
@@ -14,7 +14,7 @@ import { NavScreen } from '@/ui/NavScreen';
 import { Text } from '@/ui/Text';
 import { Pill } from '@/ui/Pill';
 import { Card } from '@/ui/Card';
-import { color, space } from '@/ui/tokens';
+import { space } from '@/ui/tokens';
 
 export default function TradeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -72,20 +72,26 @@ export default function TradeDetailScreen() {
     >
       {net ? <Money amount={net} currency="USD" variant="hero" hidden={hideAmounts} /> : null}
       {row.r_multiple ? (
-        <Text variant="mono">
-          {hideAmounts ? '••••' : formatR(fromCanonical(row.r_multiple as string))}
-        </Text>
+        <Text variant="mono">{formatR(fromCanonical(row.r_multiple as string))}</Text>
       ) : (
         <Text variant="secondary">{String(row.r_unavailable_reason ?? 'R unavailable')}</Text>
       )}
       <Card style={{ marginTop: space.lg, gap: space.sm }}>
-        <Row label="ENTRY" value={formatPrice(fromCanonical(row.entry_price as string))} />
+        <Row
+          label="ENTRY"
+          value={formatPriceForDisplay(fromCanonical(row.entry_price as string))}
+        />
         <Row
           label="EXIT"
-          value={row.exit_price ? formatPrice(fromCanonical(row.exit_price as string)) : '—'}
+          value={
+            row.exit_price ? formatPriceForDisplay(fromCanonical(row.exit_price as string)) : '—'
+          }
         />
-        <Row label="SIZE" value={formatQty(fromCanonical(row.quantity as string))} />
-        <Row label="FEES" value={formatMoney(fromCanonical(row.fees as string), 'USD')} />
+        <Row label="SIZE" value={formatPriceForDisplay(fromCanonical(row.quantity as string))} />
+        <Row
+          label="FEES"
+          value={formatMoney(fromCanonical(row.fees as string), 'USD', { hidden: hideAmounts })}
+        />
         <Row
           label="OPENED"
           value={format(new Date(row.opened_at as number), 'MMM d, yyyy HH:mm')}
@@ -106,9 +112,9 @@ export default function TradeDetailScreen() {
       />
       <ButtonUi
         title="Delete trade"
-        variant="secondary"
+        variant="destructive"
         onPress={confirmDelete}
-        style={{ marginTop: space.md, borderColor: color.red }}
+        style={{ marginTop: space.md }}
       />
     </NavScreen>
   );
