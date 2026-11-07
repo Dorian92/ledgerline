@@ -5,6 +5,9 @@ import { systemClock } from '@/data/clock';
 import { buildImportPlan } from '@/domain/import/plan';
 import { testClosedAdapter } from '@/domain/import/testAdapter';
 import { testFillsAdapter } from '@/domain/import/testFillsAdapter';
+import { hyperliquidPublicFillsAdapter } from '@/domain/import/hyperliquidPublicFillsAdapter';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const CSV = `Time,Symbol,Side,Qty,Entry,Exit
 2024-01-01T12:00:00Z,BTC-PERP,long,0.1,100,101
@@ -133,6 +136,7 @@ describe('imports repo', () => {
           label: 't',
           sourceTz: 'UTC',
           fileSha256: 'abc',
+          importMode: 'trades',
           summary: {
             total: 0,
             valid: 0,
@@ -141,6 +145,7 @@ describe('imports repo', () => {
             error: 0,
             importableRows: 0,
             tradesToCreate: 0,
+            ledgerFillsToCreate: 0,
           },
           rows: [],
           trades: [],
@@ -149,5 +154,44 @@ describe('imports repo', () => {
         fileName: 'f',
       }),
     ).rejects.toBeInstanceOf(DemoModeError);
+  });
+
+  it('commits public fill ledger without creating trades', async () => {
+    const db = await createTestDb();
+    const now = systemClock.now();
+    await db.run(
+      `INSERT INTO accounts (id, name, quote_currency, created_at, updated_at) VALUES (?,?,?,?,?)`,
+      ['acc1', 'HL public', 'USDC', now, now],
+    );
+    const imports = createImportsRepo(db, { ids: testIds(), clock: systemClock, mode: 'real' });
+    const fixture = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        'fixtures/csv/real-anonymized/hyperliquid/public.hyperliquid.fills.v1__stuxfred-candidate.csv',
+      ),
+      'utf8',
+    );
+    const plan = await buildImportPlan({
+      text: fixture,
+      adapters: [hyperliquidPublicFillsAdapter],
+      quoteCurrency: 'USDC',
+      sourceTz: 'UTC',
+      existingFingerprints: new Set(),
+    });
+    if (!('publicFillLedger' in plan) || !plan.publicFillLedger) throw new Error('plan failed');
+    const { ledgerRowsCreated, tradesCreated } = await imports.commit({
+      accountId: 'acc1',
+      plan,
+      fileName: 'candidate.csv',
+    });
+    expect(ledgerRowsCreated).toBe(60);
+    expect(tradesCreated).toBe(0);
+    const trades = await db.get<{ c: number }>('SELECT COUNT(*) as c FROM trades');
+    expect(trades?.c).toBe(0);
+    const fills = await db.get<{ c: number }>(
+      'SELECT COUNT(*) as c FROM imported_public_fills WHERE account_id = ?',
+      ['acc1'],
+    );
+    expect(fills?.c).toBe(60);
   });
 });

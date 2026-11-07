@@ -42,7 +42,8 @@ export default function ImportPreviewScreen() {
     );
   }
 
-  const m = plan.summary.tradesToCreate;
+  const ledger = plan.importMode === 'public-fill-ledger';
+  const m = ledger ? (plan.summary.ledgerFillsToCreate ?? 0) : plan.summary.tradesToCreate;
   const n = plan.summary.importableRows;
 
   return (
@@ -50,6 +51,21 @@ export default function ImportPreviewScreen() {
       <Text variant="section">Into {account?.name ?? 'journal'}</Text>
       <Text variant="body">{fileName}</Text>
       <Text variant="secondary">{plan.label}</Text>
+      {plan.attribution ? (
+        <View style={styles.banner}>
+          <Text variant="section">Third-party public data</Text>
+          <Text variant="secondary">{plan.attribution.sourceDescription}</Text>
+          {plan.attribution.walletAddress ? (
+            <Text variant="monoSmall">{plan.attribution.walletAddress}</Text>
+          ) : null}
+          {ledger ? (
+            <Text variant="caption" style={{ textTransform: 'none', marginTop: space.xs }}>
+              No synthetic trades: each row is one execution. closedPnl is exchange gross; fees
+              separate. R / stops / funding unavailable.
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
       <View style={styles.chips}>
         {plan.summary.valid ? <Chip text={`${plan.summary.valid} valid`} /> : null}
         {plan.summary.duplicate ? <Chip text={`${plan.summary.duplicate} duplicates`} /> : null}
@@ -64,7 +80,7 @@ export default function ImportPreviewScreen() {
         Parsed on-device. Your file never leaves this phone.
       </Text>
       <ButtonUi
-        title={`Import ${m} trades`}
+        title={ledger ? `Import ${m} public fills` : `Import ${m} trades`}
         disabled={m === 0}
         onPress={() => router.push('/import/result')}
         style={{ marginTop: space.lg }}
@@ -87,6 +103,13 @@ function Chip({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
+  banner: {
+    backgroundColor: color.card,
+    padding: space.md,
+    borderRadius: 12,
+    gap: space.xs,
+    marginBottom: space.sm,
+  },
   container: { gap: space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: {

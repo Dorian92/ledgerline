@@ -1,4 +1,5 @@
 import type { createImportsRepo } from '@/data/repositories/imports';
+import type { createPublicFillsRepo } from '@/data/repositories/publicFills';
 import type {
   createAccountsRepo,
   createPrefsRepo,
@@ -13,4 +14,5 @@ export type Repos = {
   tags: ReturnType<typeof createTagsRepo>;
   prefs: ReturnType<typeof createPrefsRepo>;
   imports: ReturnType<typeof createImportsRepo>;
+  publicFills: ReturnType<typeof createPublicFillsRepo>;
 };

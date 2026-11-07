@@ -7,6 +7,7 @@ import type { BuiltTrade, FillInput } from '@/domain/trade/types';
 import { detectAdapter } from './detect';
 import { fingerprintRow, hashFile } from './fingerprint';
 import { parseCsv } from './parse';
+import { publicFillLedgerRowFromNormalized } from './hyperliquidPublicFillsAdapter';
 import type { ImportAdapter, ImportFailure, ImportPlan, NormalizedRow, RowStatus } from './types';
 
 export async function buildImportPlan(opts: {
@@ -47,6 +48,14 @@ export async function buildImportPlan(opts: {
     return planFromFills(adapter, normalized, {
       text: opts.text,
       quoteCurrency: opts.quoteCurrency,
+      sourceTz: opts.sourceTz,
+      existingFingerprints: opts.existingFingerprints,
+    });
+  }
+
+  if (adapter.kind === 'public-fill-ledger') {
+    return planFromPublicFillLedger(adapter, normalized, {
+      text: opts.text,
       sourceTz: opts.sourceTz,
       existingFingerprints: opts.existingFingerprints,
     });
@@ -141,6 +150,8 @@ export async function buildImportPlan(opts: {
     label: adapter.label,
     sourceTz: opts.sourceTz,
     fileSha256: hashFile(opts.text),
+    importMode: 'trades',
+    attribution: adapter.attribution,
     summary: {
       total,
       valid,
@@ -153,6 +164,100 @@ export async function buildImportPlan(opts: {
     rows,
     trades,
     messages: [],
+  };
+}
+
+function planFromPublicFillLedger(
+  adapter: ImportAdapter,
+  normalized: NormalizedRow[],
+  opts: {
+    text: string;
+    sourceTz: string;
+    existingFingerprints: Set<string>;
+  },
+): ImportPlan {
+  const rows: ImportPlan['rows'] = [];
+  const ledger: NonNullable<ImportPlan['publicFillLedger']> = [];
+  const seen = new Set<string>();
+  let valid = 0;
+  let duplicate = 0;
+  let error = 0;
+
+  for (const row of normalized) {
+    if (row.kind === 'error') {
+      error++;
+      rows.push({
+        index: row.sourceIndex,
+        status: 'error',
+        codes: [row.code],
+        display: { time: '—', symbol: '—', side: '—', qty: '—', price: '—' },
+      });
+      continue;
+    }
+    if (row.kind !== 'public-fill') {
+      error++;
+      continue;
+    }
+    const identity = row.exchangeFillId;
+    const fp = fingerprintRow(adapter.formatId, identity);
+    let status: RowStatus = 'valid';
+    if (seen.has(fp) || opts.existingFingerprints.has(fp)) {
+      status = 'duplicate';
+      duplicate++;
+    } else {
+      seen.add(fp);
+      valid++;
+    }
+    rows.push({
+      index: row.sourceIndex,
+      status,
+      codes: [],
+      display: {
+        time: new Date(row.executedAt).toISOString(),
+        symbol: row.symbol,
+        side: `${row.directionLabel}`,
+        qty: row.quantity.toString(),
+        price: row.price.toString(),
+      },
+    });
+    if (status === 'valid') {
+      ledger.push(publicFillLedgerRowFromNormalized(row, fp));
+    }
+  }
+
+  const total = valid + duplicate + error;
+  if (total !== normalized.length) {
+    throw new Error('summary invariant violated');
+  }
+
+  return {
+    formatId: adapter.formatId,
+    exchange: adapter.exchange,
+    label: adapter.label,
+    sourceTz: opts.sourceTz,
+    fileSha256: hashFile(opts.text),
+    importMode: 'public-fill-ledger',
+    attribution: adapter.attribution,
+    summary: {
+      total,
+      valid,
+      warning: 0,
+      duplicate,
+      error,
+      importableRows: valid,
+      tradesToCreate: 0,
+      ledgerFillsToCreate: ledger.length,
+    },
+    rows,
+    trades: [],
+    publicFillLedger: ledger,
+    messages: [
+      {
+        level: 'warning',
+        text: 'Fill ledger only: no round-trip trades, stops, R, or funding. Exchange closedPnl is gross per fill; fees are separate.',
+        rowIndexes: [],
+      },
+    ],
   };
 }
 
@@ -293,6 +398,8 @@ function planFromFills(
     label: adapter.label,
     sourceTz: opts.sourceTz,
     fileSha256: hashFile(opts.text),
+    importMode: 'trades',
+    attribution: adapter.attribution,
     summary: {
       total,
       valid,

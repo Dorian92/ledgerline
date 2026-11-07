@@ -39,10 +39,12 @@ export default function ImportIndexScreen() {
       return;
     }
     const fps = await repos.imports.existingFingerprints(accountId);
+    const account = await repos.accounts.get(accountId);
+    const quote = account?.quote_currency ?? 'USDC';
     const plan = await buildImportPlan({
       text,
       adapters: importAdapters,
-      quoteCurrency: 'USD',
+      quoteCurrency: quote,
       sourceTz: 'UTC',
       existingFingerprints: fps,
     });
@@ -108,8 +110,9 @@ export default function ImportIndexScreen() {
   return (
     <NavScreen title="Import trades" scroll contentContainerStyle={styles.container}>
       <Text variant="secondary">
-        Exchange adapters for Binance, Bybit and OKX are not verified yet. You can import a test CSV
-        format below.
+        Import a CSV on this device (no upload). Hyperliquid public fill ledger is supported when
+        headers match the verified sample. Use a USDC quote account for the stuxfred candidate file.
+        Binance, Bybit and OKX tiles remain unverified.
       </Text>
       <View style={styles.tiles}>
         {EXCHANGES.map((ex) => (
@@ -123,11 +126,13 @@ export default function ImportIndexScreen() {
         ))}
       </View>
       <ButtonUi title="Choose CSV file" onPress={pickFile} />
-      <ButtonUi
-        title="Load synthetic test CSV"
-        variant="secondary"
-        onPress={() => loadText('SYNTHETIC_test.csv', SAMPLE)}
-      />
+      {__DEV__ ? (
+        <ButtonUi
+          title="Load synthetic test CSV (dev only)"
+          variant="secondary"
+          onPress={() => loadText('SYNTHETIC_test.csv', SAMPLE)}
+        />
+      ) : null}
     </NavScreen>
   );
 }

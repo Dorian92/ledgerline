@@ -4,6 +4,7 @@ import type { IdGenerator } from '@/data/ids';
 import { tradeInputToRow } from '@/data/mappers/trade';
 import { fillInputToRow } from '@/data/mappers/fill';
 import type { ImportPlan } from '@/domain/import/types';
+import { formatImportAttributionNote } from '@/domain/import/attribution';
 import { validateTradeInput, accountFromQuote } from '@/domain/trade';
 import type { TradeInput } from '@/domain/trade/types';
 
@@ -34,12 +35,17 @@ export function createImportsRepo(
       const now = deps.clock.now();
       const batchId = deps.ids.randomUUID();
       let tradesCreated = 0;
+      let ledgerRowsCreated = 0;
+      const attributionNote = opts.plan.attribution
+        ? formatImportAttributionNote(opts.plan.attribution)
+        : null;
       await db.transaction(async (tx) => {
         await tx.run(
           `INSERT INTO import_batches (
             id, account_id, exchange, format_id, file_name, file_sha256, source_tz,
-            total_rows, imported_rows, duplicate_rows, error_rows, trades_created, created_at
-          ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            total_rows, imported_rows, duplicate_rows, error_rows, trades_created,
+            ledger_rows_created, attribution_note, created_at
+          ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
           [
             batchId,
             opts.accountId,
@@ -53,9 +59,55 @@ export function createImportsRepo(
             opts.plan.summary.duplicate,
             opts.plan.summary.error,
             0,
+            0,
+            attributionNote,
             now,
           ],
         );
+
+        if (opts.plan.importMode === 'public-fill-ledger') {
+          for (const row of opts.plan.publicFillLedger ?? []) {
+            const id = deps.ids.randomUUID();
+            await tx.run(
+              `INSERT INTO imported_public_fills (
+                id, account_id, batch_id, exchange_fill_id, symbol, side, direction_label,
+                price, quantity, fee, fee_token, builder_fee, closed_pnl, start_position,
+                executed_at, crossed
+              ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+              [
+                id,
+                opts.accountId,
+                batchId,
+                row.exchangeFillId,
+                row.symbol,
+                row.side,
+                row.directionLabel,
+                row.price,
+                row.quantity,
+                row.fee,
+                row.feeToken,
+                row.builderFee,
+                row.closedPnl,
+                row.startPosition,
+                row.executedAt,
+                row.crossed ? 1 : 0,
+              ],
+            );
+            for (const fp of row.fingerprints) {
+              await tx.run(
+                'INSERT INTO import_fingerprints (account_id, fingerprint, batch_id) VALUES (?,?,?)',
+                [opts.accountId, fp, batchId],
+              );
+            }
+            ledgerRowsCreated++;
+          }
+          await tx.run('UPDATE import_batches SET ledger_rows_created = ? WHERE id = ?', [
+            ledgerRowsCreated,
+            batchId,
+          ]);
+          return;
+        }
+
         for (const trade of opts.plan.trades) {
           const input: TradeInput = {
             ...trade.input,
@@ -151,10 +203,11 @@ export function createImportsRepo(
           batchId,
         ]);
       });
-      return { batchId, tradesCreated };
+      return { batchId, tradesCreated, ledgerRowsCreated };
     },
     async undo(batchId: string) {
       await db.transaction(async (tx) => {
+        await tx.run('DELETE FROM imported_public_fills WHERE batch_id = ?', [batchId]);
         await tx.run('DELETE FROM trades WHERE import_batch_id = ?', [batchId]);
         await tx.run('DELETE FROM import_fingerprints WHERE batch_id = ?', [batchId]);
         await tx.run('UPDATE import_batches SET undone_at = ? WHERE id = ?', [

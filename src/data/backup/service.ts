@@ -53,6 +53,7 @@ export async function deleteAllJournalData(repos: Repos) {
   await db.run('DELETE FROM trade_tags');
   await db.run('DELETE FROM trades');
   await db.run('DELETE FROM import_fingerprints');
+  await db.run('DELETE FROM imported_public_fills');
   await db.run('DELETE FROM import_batches');
   await db.run('DELETE FROM accounts');
   await repos.prefs.set('mode', 'unset');

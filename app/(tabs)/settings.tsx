@@ -58,6 +58,9 @@ export default function SettingsTab() {
       </Section>
       <Section title="Data">
         <Row label="Import CSV" onPress={() => router.push('/import')} />
+        {mode !== 'demo' ? (
+          <Row label="Public fill ledger" onPress={() => router.push('/public-fills')} />
+        ) : null}
         <Row label="Backup & restore" onPress={() => router.push('/settings/backup')} />
       </Section>
       <Section title="Pro">

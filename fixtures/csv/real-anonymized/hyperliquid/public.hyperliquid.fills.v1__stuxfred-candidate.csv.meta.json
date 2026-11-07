@@ -1,0 +1,11 @@
+{
+  "exchange": "hyperliquid",
+  "formatId": "public.hyperliquid.fills.v1",
+  "exportPath": "POST https://api.hyperliquid.xyz/info {\"type\":\"userFills\",\"user\":\"<address>\"}",
+  "exportedOn": "2026-11-07",
+  "wallet": "0x69906b0ed626ca01a4b7c001e5711e5714ccf207",
+  "leaderboardLabel": "stuxfred",
+  "disclosure": "PUBLICLY SOURCED THIRD-PARTY EXAMPLE — not the Ledgerline user's wallet",
+  "anonymization": "none — public API sample committed for adapter verification",
+  "expected": { "rows": 60, "ledgerFills": 60, "nonzeroClosedPnl": 31 }
+}

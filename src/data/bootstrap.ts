@@ -4,6 +4,7 @@ import { systemClock } from '@/data/clock';
 import { expoIds } from '@/data/ids.expo';
 import { createAccountsRepo, createPrefsRepo, createTagsRepo } from '@/data/repositories/index';
 import { createImportsRepo } from '@/data/repositories/imports';
+import { createPublicFillsRepo } from '@/data/repositories/publicFills';
 import { createTradesRepo } from '@/data/repositories/trades';
 import { generateDemoTrades } from '@/domain/demo/generate';
 import type { Repos } from '@/data/DbProvider.types';
@@ -19,6 +20,7 @@ function makeRepos(db: Db, mode: 'real' | 'demo'): Repos {
     tags: createTagsRepo(db, deps),
     prefs: createPrefsRepo(db, deps),
     imports: createImportsRepo(db, { ...deps, mode }),
+    publicFills: createPublicFillsRepo(db),
   };
 }
 

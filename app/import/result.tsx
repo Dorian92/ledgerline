@@ -17,16 +17,21 @@ export default function ImportResultScreen() {
   const accountId = useSession((s) => s.activeAccountId);
   const [batchId, setBatchId] = useState<string | null>(null);
   const [count, setCount] = useState(0);
+  const ledger = plan?.importMode === 'public-fill-ledger';
 
   const onImport = async () => {
     if (!plan || !accountId) return;
-    const { batchId: id, tradesCreated } = await repos.imports.commit({
+    const {
+      batchId: id,
+      tradesCreated,
+      ledgerRowsCreated,
+    } = await repos.imports.commit({
       accountId,
       plan,
       fileName,
     });
     setBatchId(id);
-    setCount(tradesCreated);
+    setCount(ledger ? ledgerRowsCreated : tradesCreated);
   };
 
   return (
@@ -34,8 +39,13 @@ export default function ImportResultScreen() {
       <ScreenHeader title="Import result" />
       {count > 0 ? (
         <>
-          <Text variant="title">Imported {count} trades</Text>
-          <ButtonUi title="View trades" onPress={() => router.replace('/(tabs)/trades')} />
+          <Text variant="title">
+            Imported {count} {ledger ? 'public fills' : 'trades'}
+          </Text>
+          <ButtonUi
+            title={ledger ? 'View public fills' : 'View trades'}
+            onPress={() => router.replace(ledger ? '/public-fills' : '/(tabs)/trades')}
+          />
           <ButtonUi
             title="Undo import"
             variant="secondary"
