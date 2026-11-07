@@ -26,9 +26,11 @@ import type { TradeFormValues } from './schema';
 export function TradeForm({
   onSubmit,
   submitting,
+  onCancel,
 }: {
   onSubmit: (values: TradeFormValues) => void;
   submitting?: boolean;
+  onCancel?: () => void;
 }) {
   const accountId = useSession((s) => s.activeAccountId);
   const [symbol, setSymbol] = useState('BTC-PERP');
@@ -88,10 +90,14 @@ export function TradeForm({
           value={direction}
           onChange={setDirection}
         />
-        <Field label="ENTRY" value={entry} onChange={setEntry} />
-        <Field label="EXIT" value={exit} onChange={setExit} />
-        <Field label="SIZE" value={quantity} onChange={setQuantity} />
-        <Field label="STOP" value={stop} onChange={setStop} />
+        <View style={styles.twoCol}>
+          <Field label="ENTRY" value={entry} onChange={setEntry} />
+          <Field label="EXIT" value={exit} onChange={setExit} />
+        </View>
+        <View style={styles.twoCol}>
+          <Field label="SIZE" value={quantity} onChange={setQuantity} />
+          <Field label="STOP" value={stop} onChange={setStop} />
+        </View>
         <Field label="FEES" value={fees} onChange={setFees} />
         <Text variant="caption">EMOTION</Text>
         <View style={styles.emotions}>
@@ -124,6 +130,14 @@ export function TradeForm({
           </Card>
         ) : null}
         <ButtonUi title="Save trade" onPress={save} disabled={submitting || !accountId} />
+        {onCancel ? (
+          <ButtonUi
+            title="Cancel"
+            variant="secondary"
+            onPress={onCancel}
+            style={{ marginTop: space.sm }}
+          />
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -152,8 +166,9 @@ function Field({
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: space.lg, gap: space.md, paddingBottom: 48 },
-  field: { gap: space.xs },
+  scroll: { gap: space.md, paddingBottom: 48 },
+  twoCol: { flexDirection: 'row', gap: space.sm },
+  field: { gap: space.xs, flex: 1 },
   input: {
     borderWidth: 1,
     borderColor: color.border,
@@ -169,7 +184,9 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     borderRadius: 999,
     paddingHorizontal: space.md,
-    paddingVertical: space.xs,
+    paddingVertical: space.sm,
+    minHeight: 48,
+    justifyContent: 'center',
   },
   chipActive: { borderColor: color.violet, backgroundColor: color.violetSoft },
 });

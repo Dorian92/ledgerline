@@ -13,9 +13,11 @@ const PAD = { top: 12, right: 8, bottom: 20, left: 8 };
 export function EquityChart({
   points,
   height = H,
+  hidden,
 }: {
   points: { t: number; e: Dec }[];
   height?: number;
+  hidden?: boolean;
 }) {
   const sampled = downsampleEquity(points, 120);
   const built = buildEquityPath(sampled, W, height, PAD);
@@ -44,7 +46,7 @@ export function EquityChart({
       width="100%"
       height={height}
       viewBox={`0 0 ${W} ${height}`}
-      accessibilityLabel={`Equity curve from ${start?.toFixed(0)} to ${end?.toFixed(0)}`}
+      accessibilityLabel={hidden ? 'Equity curve hidden' : 'Equity curve'}
     >
       <Defs>
         <LinearGradient id="eqFill" x1="0" y1="0" x2="0" y2="1">

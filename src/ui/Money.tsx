@@ -18,14 +18,18 @@ export function Money({
 }) {
   const formatted = formatMoney(amount, currency, { sign: 'always', hidden });
   const style = variant === 'hero' ? typography.hero : typography.mono;
-  const tint =
-    amount.isPositive() && !amount.isZero()
+  const tint = hidden
+    ? color.textMuted
+    : amount.isPositive() && !amount.isZero()
       ? color.green
       : amount.isNegative()
         ? color.red
         : color.text;
   return (
-    <Text style={[style, { color: tint }]} accessibilityLabel={formatted}>
+    <Text
+      style={[style, { color: tint }]}
+      accessibilityLabel={hidden ? 'Amount hidden' : formatted}
+    >
       {formatted}
     </Text>
   );

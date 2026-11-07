@@ -16,9 +16,16 @@ describe('useRealModeOnly', () => {
     expect(result.current.reason).toMatch(/demo/i);
   });
 
-  it('allows real mode', () => {
-    useSession.setState({ mode: 'real' });
+  it('allows real mode with account', () => {
+    useSession.setState({ mode: 'real', activeAccountId: 'acc-1' });
     const { result } = renderHook(() => useRealModeOnly());
     expect(result.current.allowed).toBe(true);
+  });
+
+  it('blocks real mode without account', () => {
+    useSession.setState({ mode: 'real', activeAccountId: null });
+    const { result } = renderHook(() => useRealModeOnly());
+    expect(result.current.allowed).toBe(false);
+    expect(result.current.reason).toMatch(/account/i);
   });
 });

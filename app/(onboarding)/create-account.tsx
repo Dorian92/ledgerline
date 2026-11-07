@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useDb, useRepos } from '@/data/DbProvider';
 import { ButtonUi } from '@/ui/Button';
+import { NavScreen } from '@/ui/NavScreen';
 import { Text } from '@/ui/Text';
 import { color, space } from '@/ui/tokens';
 
@@ -21,29 +22,36 @@ export default function CreateAccountScreen() {
     router.replace('/(tabs)');
   };
 
+  const onCancel = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.replace('/(tabs)');
+  };
+
   return (
-    <View style={styles.container}>
-      <Text variant="title">Start my journal</Text>
+    <NavScreen title="Start my journal" backLabel="Close" onBack={onCancel}>
       <Text variant="caption">Account name</Text>
       <TextInput
         value={name}
         onChangeText={setName}
         style={styles.input}
         placeholderTextColor={color.textMuted}
+        accessibilityLabel="Account name"
       />
       <ButtonUi title="Create account" onPress={onCreate} />
-    </View>
+      <ButtonUi
+        title="Cancel"
+        variant="secondary"
+        onPress={onCancel}
+        style={{ marginTop: space.md }}
+      />
+    </NavScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bg,
-    padding: space.lg,
-    paddingTop: 64,
-    gap: space.md,
-  },
   input: {
     borderWidth: 1,
     borderColor: color.border,
@@ -51,5 +59,7 @@ const styles = StyleSheet.create({
     padding: space.md,
     color: color.text,
     minHeight: 48,
+    marginTop: space.xs,
+    marginBottom: space.lg,
   },
 });

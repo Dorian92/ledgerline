@@ -4,9 +4,9 @@ import * as Notifications from 'expo-notifications';
 
 import { useRepos } from '@/data/DbProvider';
 import { cancelAllReminders, scheduleJournalReminder } from '@/platform/reminders';
-import { ScreenHeader } from '@/ui/primitives';
+import { NavScreen } from '@/ui/NavScreen';
 import { Text } from '@/ui/Text';
-import { color, space } from '@/ui/tokens';
+import { space } from '@/ui/tokens';
 
 export default function RemindersSettingsScreen() {
   const repos = useRepos();
@@ -29,8 +29,7 @@ export default function RemindersSettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Reminders" />
+    <NavScreen title="Reminders" scroll>
       <Text variant="secondary">
         Optional daily nudge to log trades. Notifications stay on-device (Android 13+ permission
         requested when you enable).
@@ -39,22 +38,16 @@ export default function RemindersSettingsScreen() {
         <Text>Daily reminder · 20:00</Text>
         <Switch value={enabled} onValueChange={toggle} accessibilityLabel="Daily reminder" />
       </View>
-    </View>
+    </NavScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bg,
-    padding: space.lg,
-    paddingTop: 48,
-    gap: space.md,
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     minHeight: 48,
+    marginTop: space.md,
   },
 });

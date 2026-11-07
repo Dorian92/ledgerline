@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, Pressable } from 'react-native';
+import { View, StyleSheet, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
@@ -7,7 +7,7 @@ import { useRepos } from '@/data/DbProvider';
 import { ProGate, useHasPro, usePro } from '@/state/pro';
 import { useSession } from '@/state/session';
 import { ButtonUi } from '@/ui/Button';
-import { ScreenHeader } from '@/ui/primitives';
+import { NavScreen } from '@/ui/NavScreen';
 import { Text } from '@/ui/Text';
 import { color, space } from '@/ui/tokens';
 
@@ -65,15 +65,18 @@ function AccountRow({
         </Text>
       )}
       <View style={styles.actions}>
-        <Pressable onPress={() => (editing ? save() : setEditing(true))} accessibilityRole="button">
-          <Text variant="secondary">{editing ? 'Save' : 'Rename'}</Text>
-        </Pressable>
+        <ButtonUi
+          title={editing ? 'Save' : 'Rename'}
+          onPress={() => (editing ? save() : setEditing(true))}
+          variant="secondary"
+        />
         {canDelete ? (
-          <Pressable onPress={remove} accessibilityRole="button">
-            <Text variant="secondary" style={{ color: color.red }}>
-              Delete
-            </Text>
-          </Pressable>
+          <ButtonUi
+            title="Delete"
+            onPress={remove}
+            variant="secondary"
+            style={{ borderColor: color.red }}
+          />
         ) : null}
       </View>
     </View>
@@ -118,68 +121,58 @@ export default function AccountsSettingsScreen() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <ScreenHeader title="Accounts" />
-      <ProGate
-        fallback={
-          <>
-            {data?.map((a) => (
-              <AccountRow
-                key={a.id}
-                id={a.id}
-                name={a.name}
-                quote={a.quote_currency}
-                onRenamed={() => refetch()}
-                onDeleted={() => afterDelete(a.id)}
-                canDelete={(data?.length ?? 0) > 1}
-              />
-            ))}
-          </>
-        }
-      >
-        {data?.map((a) => (
-          <AccountRow
-            key={a.id}
-            id={a.id}
-            name={a.name}
-            quote={a.quote_currency}
-            onRenamed={() => refetch()}
-            onDeleted={() => afterDelete(a.id)}
-            canDelete={(data?.length ?? 0) > 1}
-          />
-        ))}
-      </ProGate>
-      <Text variant="caption">NEW ACCOUNT</Text>
-      <TextInput value={name} onChangeText={setName} style={styles.input} />
+  const list = (
+    <>
+      {data?.map((a) => (
+        <AccountRow
+          key={a.id}
+          id={a.id}
+          name={a.name}
+          quote={a.quote_currency}
+          onRenamed={() => refetch()}
+          onDeleted={() => afterDelete(a.id)}
+          canDelete={(data?.length ?? 0) > 1}
+        />
+      ))}
+      <Text variant="caption" style={{ marginTop: space.md }}>
+        NEW ACCOUNT
+      </Text>
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+        accessibilityLabel="New account name"
+      />
       <ButtonUi title="Create account" onPress={createSecond} />
-      {!hasPro ? (
+      {__DEV__ && !hasPro ? (
         <ButtonUi
-          title="Mock purchase (dev)"
+          title="Unlock Pro (dev mock)"
           variant="secondary"
           onPress={() => mockPurchase(repos)}
+          style={{ marginTop: space.sm }}
         />
       ) : null}
-    </View>
+    </>
+  );
+
+  return (
+    <NavScreen title="Accounts" scroll>
+      <ProGate fallback={list}>{list}</ProGate>
+    </NavScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bg,
-    padding: space.lg,
-    paddingTop: 48,
-    gap: space.md,
-  },
   input: {
     borderWidth: 1,
     borderColor: color.border,
     borderRadius: 12,
     padding: space.md,
     color: color.text,
-    flex: 1,
+    minHeight: 48,
+    marginTop: space.xs,
+    marginBottom: space.sm,
   },
-  accountRow: { gap: space.sm },
-  actions: { flexDirection: 'row', gap: space.lg },
+  accountRow: { gap: space.sm, marginBottom: space.md },
+  actions: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 });

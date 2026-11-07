@@ -46,7 +46,8 @@ export function useHistory(filter: HistoryFilter) {
     );
   }, [query.data, filter, tz]);
 
-  return { ...query, sections, tz };
+  const tradeCount = query.data?.length ?? 0;
+  return { ...query, sections, tz, tradeCount };
 }
 
 export function useUndoDeleteTrade() {

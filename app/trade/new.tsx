@@ -4,10 +4,9 @@ import { formToInput, useCreateTrade } from '@/data/queries/useTrades';
 import { TradeForm } from '@/features/trade-form/TradeForm';
 import type { TradeFormValues } from '@/features/trade-form/schema';
 import { useSession } from '@/state/session';
-import { ScreenHeader } from '@/ui/primitives';
-import { View, StyleSheet } from 'react-native';
+import { NavScreen } from '@/ui/NavScreen';
 import { Pill } from '@/ui/Pill';
-import { color } from '@/ui/tokens';
+
 export default function NewTradeScreen() {
   const router = useRouter();
   const create = useCreateTrade();
@@ -23,17 +22,20 @@ export default function NewTradeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <>
       <Stack.Screen options={{ presentation: 'modal' }} />
-      <ScreenHeader
+      <NavScreen
         title="Quick add"
+        backLabel="Close"
+        scroll
         right={mode === 'demo' ? <Pill label="DEMO DATA" variant="demo" /> : undefined}
-      />
-      <TradeForm onSubmit={onSubmit} submitting={create.isPending} />
-    </View>
+      >
+        <TradeForm
+          onSubmit={onSubmit}
+          submitting={create.isPending}
+          onCancel={() => router.back()}
+        />
+      </NavScreen>
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: color.bg, paddingTop: 48 },
-});

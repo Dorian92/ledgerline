@@ -3,13 +3,17 @@ import { View, StyleSheet, TextInput, Pressable } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHistory, useUndoDeleteTrade } from '@/data/queries/useHistory';
 import { useDeleteTrade } from '@/data/queries/useTrades';
 import { useRepos } from '@/data/DbProvider';
 import type { HistoryFilter } from '@/domain/metrics/history';
+import { fromCanonical } from '@/domain/money/canonical';
+import { formatMoney } from '@/domain/money/format';
 import { FilterSheet } from '@/features/trades/FilterSheet';
 import { useSession } from '@/state/session';
+import { usePrivacy } from '@/state/privacy';
 import { TradeRow } from '@/ui/TradeRow';
 import { Text } from '@/ui/Text';
 import { Pill } from '@/ui/Pill';
@@ -20,6 +24,8 @@ export default function TradesScreen() {
   const router = useRouter();
   const mode = useSession((s) => s.mode);
   const repos = useRepos();
+  const hideAmounts = usePrivacy((s) => s.hideAmounts);
+  const insets = useSafeAreaInsets();
   const [text, setText] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState<HistoryFilter>({});
@@ -27,7 +33,7 @@ export default function TradesScreen() {
     () => ({ ...filter, text: text.trim() || undefined }),
     [filter, text],
   );
-  const { sections, isLoading, error, refetch } = useHistory(activeFilter);
+  const { sections, isLoading, error, refetch, tradeCount } = useHistory(activeFilter);
   const del = useDeleteTrade();
   const undo = useUndoDeleteTrade();
   const [pendingUndo, setPendingUndo] = useState<{
@@ -38,6 +44,14 @@ export default function TradesScreen() {
   const stickyHeaderIndices = sections
     .map((s, i) => (s.kind === 'header' ? i : -1))
     .filter((i) => i >= 0);
+
+  const hasActiveFilter =
+    !!text.trim() ||
+    !!filter.direction ||
+    !!filter.outcome ||
+    !!filter.source ||
+    Object.keys(filter).length > 0;
+  const noMatches = !isLoading && tradeCount > 0 && sections.length === 0 && hasActiveFilter;
 
   const onDelete = async (id: string) => {
     const row = await repos.trades.get(id);
@@ -57,30 +71,32 @@ export default function TradesScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader
-        title="Trades"
-        right={mode === 'demo' ? <Pill label="DEMO DATA" variant="demo" /> : undefined}
-      />
-      <TextInput
-        placeholder="Search symbol or notes"
-        placeholderTextColor={color.textMuted}
-        value={text}
-        onChangeText={setText}
-        style={styles.search}
-        accessibilityLabel="Search trades"
-      />
-      <View style={styles.chips}>
-        <Chip
-          label="All"
-          active={!filter.outcome && !filter.direction}
-          onPress={() => setFilter({})}
+      <View style={{ paddingTop: insets.top, paddingHorizontal: space.lg }}>
+        <ScreenHeader
+          title="Trades"
+          right={mode === 'demo' ? <Pill label="DEMO DATA" variant="demo" /> : undefined}
         />
-        <Chip
-          label="Losers"
-          active={filter.outcome === 'loss'}
-          onPress={() => setFilter({ outcome: 'loss' })}
+        <TextInput
+          placeholder="Search symbol or notes"
+          placeholderTextColor={color.textMuted}
+          value={text}
+          onChangeText={setText}
+          style={styles.search}
+          accessibilityLabel="Search trades"
         />
-        <Chip label="Filters" active={filterOpen} onPress={() => setFilterOpen(true)} />
+        <View style={styles.chips}>
+          <Chip
+            label="All"
+            active={!filter.outcome && !filter.direction}
+            onPress={() => setFilter({})}
+          />
+          <Chip
+            label="Losers"
+            active={filter.outcome === 'loss'}
+            onPress={() => setFilter({ outcome: 'loss' })}
+          />
+          <Chip label="Filters" active={filterOpen} onPress={() => setFilterOpen(true)} />
+        </View>
       </View>
       <FilterSheet
         visible={filterOpen}
@@ -103,20 +119,45 @@ export default function TradesScreen() {
           <Text style={{ color: color.text }}>Trade deleted · Undo</Text>
         </Pressable>
       ) : null}
-      {!isLoading && sections.length === 0 ? (
+      {noMatches ? (
+        <EmptyState
+          title="No matching trades"
+          body="Try another search term or clear filters."
+          actionLabel="Clear search"
+          onAction={() => {
+            setText('');
+            setFilter({});
+          }}
+        />
+      ) : !isLoading && sections.length === 0 ? (
         <EmptyState title="No trades yet." body="Add a trade or import from Settings." />
       ) : (
         <FlashList
           data={sections}
           stickyHeaderIndices={stickyHeaderIndices}
-          contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 120 }}
+          contentContainerStyle={{
+            paddingHorizontal: space.lg,
+            paddingBottom: insets.bottom + 120,
+          }}
           renderItem={({ item }) => {
             if (item.kind === 'header') {
+              const net = fromCanonical(item.net);
               return (
                 <View style={styles.headerRow}>
                   <Text variant="section">{item.label}</Text>
-                  <Text variant="monoSmall" style={{ color: color.green }}>
-                    {item.net}
+                  <Text
+                    variant="monoSmall"
+                    style={{
+                      color: hideAmounts
+                        ? color.textMuted
+                        : net.isNegative()
+                          ? color.red
+                          : net.isPositive()
+                            ? color.green
+                            : color.text,
+                    }}
+                  >
+                    {formatMoney(net, 'USD', { sign: 'always', hidden: hideAmounts })}
                   </Text>
                 </View>
               );
@@ -129,6 +170,7 @@ export default function TradesScreen() {
                 timeLabel={format(new Date(t.closed_at ?? t.opened_at), 'HH:mm')}
                 netPnl={t.net_pnl ?? '0'}
                 rMultiple={t.r_multiple}
+                hidden={hideAmounts}
                 onPress={() => router.push(`/trade/${t.id}`)}
                 onLongPress={() => onDelete(t.id)}
               />
@@ -136,7 +178,7 @@ export default function TradesScreen() {
           }}
         />
       )}
-      <View style={styles.fabWrap}>
+      <View style={[styles.fabWrap, { bottom: insets.bottom + 88 }]}>
         <Fab onPress={() => router.push('/trade/new')} />
       </View>
     </View>
@@ -158,20 +200,19 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: color.bg, paddingTop: 48 },
+  container: { flex: 1, backgroundColor: color.bg },
   search: {
-    marginHorizontal: space.lg,
     borderWidth: 1,
     borderColor: color.border,
     borderRadius: 12,
     padding: space.md,
     color: color.text,
     marginBottom: space.sm,
+    minHeight: 48,
   },
   chips: {
     flexDirection: 'row',
     gap: space.sm,
-    paddingHorizontal: space.lg,
     marginBottom: space.sm,
   },
   chip: {
@@ -179,11 +220,14 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     borderRadius: 999,
     paddingHorizontal: space.md,
-    paddingVertical: space.xs,
+    paddingVertical: space.sm,
+    minHeight: 48,
+    justifyContent: 'center',
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: space.sm,
     backgroundColor: color.bg,
   },
@@ -194,5 +238,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: space.sm,
   },
-  fabWrap: { position: 'absolute', right: space.lg, bottom: 100 },
+  fabWrap: { position: 'absolute', right: space.lg },
 });

@@ -1,22 +1,44 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { useImportDraft } from '@/state/importDraft';
+import { useSession } from '@/state/session';
+import { useRepos } from '@/data/DbProvider';
+import { useQuery } from '@tanstack/react-query';
 import { ButtonUi } from '@/ui/Button';
-import { ScreenHeader } from '@/ui/primitives';
+import { NavScreen } from '@/ui/NavScreen';
 import { Text } from '@/ui/Text';
 import { color, space } from '@/ui/tokens';
 
 export default function ImportPreviewScreen() {
   const router = useRouter();
   const { fileName, plan } = useImportDraft();
+  const accountId = useSession((s) => s.activeAccountId);
+  const repos = useRepos();
+  const { data: account } = useQuery({
+    queryKey: ['account', accountId],
+    enabled: !!accountId,
+    queryFn: () => repos.accounts.get(accountId!),
+  });
 
   if (!plan) {
     return (
-      <View style={styles.container}>
-        <ScreenHeader title="Preview" />
+      <NavScreen title="Preview">
         <Text variant="secondary">No import plan loaded.</Text>
-      </View>
+      </NavScreen>
+    );
+  }
+
+  if (!accountId) {
+    return (
+      <NavScreen title="Preview import">
+        <Text variant="secondary">Create a journal account before importing trades.</Text>
+        <ButtonUi
+          title="Start my journal"
+          onPress={() => router.push('/(onboarding)/create-account')}
+          style={{ marginTop: space.lg }}
+        />
+      </NavScreen>
     );
   }
 
@@ -24,8 +46,8 @@ export default function ImportPreviewScreen() {
   const n = plan.summary.importableRows;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <ScreenHeader title="Preview import" />
+    <NavScreen title="Preview import" scroll contentContainerStyle={styles.container}>
+      <Text variant="section">Into {account?.name ?? 'journal'}</Text>
       <Text variant="body">{fileName}</Text>
       <Text variant="secondary">{plan.label}</Text>
       <View style={styles.chips}>
@@ -50,7 +72,7 @@ export default function ImportPreviewScreen() {
       <Text variant="caption" style={{ textTransform: 'none' }}>
         from {n} rows
       </Text>
-    </ScrollView>
+    </NavScreen>
   );
 }
 
@@ -65,7 +87,7 @@ function Chip({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: space.lg, paddingTop: 48, gap: space.sm, backgroundColor: color.bg },
+  container: { gap: space.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: {
     backgroundColor: color.card,

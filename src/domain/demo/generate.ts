@@ -11,6 +11,7 @@ function mulberry32(seed: number) {
   };
 }
 
+/** Demo journal: mixed wins/losses, realistic linear perp PnL (recomputed on write). */
 export function generateDemoTrades(opts: {
   seed: number;
   now: number;
@@ -21,11 +22,20 @@ export function generateDemoTrades(opts: {
   const symbols = ['BTC-PERP', 'ETH-PERP', 'SOL-PERP'];
   for (let i = 0; i < 80; i++) {
     const sym = symbols[Math.floor(rnd() * symbols.length)]!;
-    const long = rnd() > 0.4;
-    const entry = dec(String(100 + rnd() * 50));
-    const exit = long ? entry.add(dec(String(rnd() * 5))) : entry.sub(dec(String(rnd() * 3)));
-    const qty = dec(String((0.05 + rnd() * 0.2).toFixed(3)));
+    const long = rnd() > 0.45;
+    const win = rnd() > 0.42;
+    const entry = dec(String(80 + rnd() * 120));
+    const move = dec(String(1 + rnd() * 6));
+    const lossMove = dec(String(0.5 + rnd() * 2.5));
+    let exit = entry;
+    if (long) {
+      exit = win ? entry.add(move) : entry.sub(lossMove);
+    } else {
+      exit = win ? entry.sub(move) : entry.add(lossMove);
+    }
+    const qty = dec(String((0.05 + rnd() * 0.25).toFixed(3)));
     const closedAt = opts.now - Math.floor(rnd() * 30 * 86400000);
+    const stopOffset = long ? dec('2') : dec('2');
     trades.push({
       accountId: opts.accountId,
       symbol: sym,
@@ -38,16 +48,16 @@ export function generateDemoTrades(opts: {
       entryPrice: entry,
       exitPrice: exit,
       quantity: qty,
-      stopPrice: long ? entry.sub(dec('1')) : entry.add(dec('1')),
+      stopPrice: long ? entry.sub(stopOffset) : entry.add(stopOffset),
       leverage: dec('2'),
-      fees: dec(String((rnd() * 5).toFixed(2))),
+      fees: dec(String((0.5 + rnd() * 3).toFixed(2))),
       feesComplete: true,
       funding: dec('0'),
       fundingStatus: 'none',
       pnlSource: 'computed',
-      emotion: rnd() > 0.7 ? 'fomo' : 'calm',
+      emotion: rnd() > 0.65 ? 'fomo' : 'calm',
       tagIds: [],
-      notes: '',
+      notes: rnd() > 0.8 ? 'Breakout retest' : '',
     });
   }
   return trades;

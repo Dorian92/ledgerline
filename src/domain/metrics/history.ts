@@ -1,7 +1,7 @@
 import type { Emotion } from '@/domain/trade/types';
 import { classifyOutcome } from '@/domain/trade/compute';
 import { add, ZERO } from '@/domain/money/dec';
-import { fromCanonical } from '@/domain/money/canonical';
+import { fromCanonical, toCanonical } from '@/domain/money/canonical';
 import { localDayKey } from '@/domain/time/tz';
 import type { DayKey } from '@/domain/time/tz';
 
@@ -95,7 +95,7 @@ export function buildHistorySections(
       kind: 'header',
       key: day,
       label,
-      net: net.toString(),
+      net: toCanonical(net),
       count: rows.length,
       filtered,
     });

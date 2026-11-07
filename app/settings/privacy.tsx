@@ -4,19 +4,30 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as ScreenCapture from 'expo-screen-capture';
 
 import { useRepos } from '@/data/DbProvider';
-import { ScreenHeader } from '@/ui/primitives';
+import { NavScreen } from '@/ui/NavScreen';
+import { usePrivacy } from '@/state/privacy';
 import { Text } from '@/ui/Text';
-import { color, space } from '@/ui/tokens';
+import { space } from '@/ui/tokens';
 
 export default function PrivacyScreen() {
   const repos = useRepos();
+  const hideAmounts = usePrivacy((s) => s.hideAmounts);
+  const setHideAmounts = usePrivacy((s) => s.setHideAmounts);
   const [lock, setLock] = useState(false);
   const [blockCapture, setBlockCapture] = useState(false);
   const [canLock, setCanLock] = useState(false);
 
   useEffect(() => {
     LocalAuthentication.hasHardwareAsync().then(setCanLock);
-  }, []);
+    repos.prefs.get('hide_amounts').then((v) => {
+      if (typeof v === 'boolean') setHideAmounts(v);
+    });
+  }, [repos, setHideAmounts]);
+
+  const toggleHide = async (v: boolean) => {
+    setHideAmounts(v);
+    await repos.prefs.set('hide_amounts', v);
+  };
 
   const toggleLock = async (v: boolean) => {
     if (v) {
@@ -36,11 +47,17 @@ export default function PrivacyScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Privacy" />
+    <NavScreen title="Privacy" scroll>
       <Text variant="secondary">
         Ledgerline stores trades only on this device. CSV parsing runs locally; nothing is uploaded
         by default.
+      </Text>
+      <View style={styles.row}>
+        <Text>Hide amounts</Text>
+        <Switch value={hideAmounts} onValueChange={toggleHide} accessibilityLabel="Hide amounts" />
+      </View>
+      <Text variant="caption">
+        Masks currency across dashboards, lists, charts, and screen reader labels.
       </Text>
       <View style={styles.row}>
         <Text>App lock {canLock ? '' : '(unavailable)'}</Text>
@@ -59,22 +76,16 @@ export default function PrivacyScreen() {
           accessibilityLabel="Block screenshots"
         />
       </View>
-    </View>
+    </NavScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bg,
-    padding: space.lg,
-    paddingTop: 48,
-    gap: space.md,
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     minHeight: 48,
+    marginTop: space.md,
   },
 });

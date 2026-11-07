@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Summary } from '@/domain/metrics/summary';
 import { ButtonUi } from '@/ui/Button';
@@ -14,10 +15,14 @@ export function CaveatSheet({
   onClose: () => void;
   summary: Summary;
 }) {
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }]}
+          onPress={(e) => e.stopPropagation()}
+        >
           <Text variant="title">About these numbers</Text>
           <Text variant="secondary">
             Win rate excludes breakeven trades. Average R includes only closed trades with a valid

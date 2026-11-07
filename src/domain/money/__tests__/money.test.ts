@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 
 import { fromCanonical, toCanonical } from '../canonical';
 import { dec } from '../dec';
-import { formatMoney, formatR } from '../format';
+import { formatMoney, formatR, formatRatioAsPercent } from '../format';
 import { parseUserDecimal } from '../parse';
 
 describe('canonical', () => {
@@ -34,6 +34,14 @@ describe('formatMoney §8', () => {
 
   it('formatR null', () => {
     expect(formatR(null)).toBe('—');
+  });
+});
+
+describe('formatRatioAsPercent', () => {
+  it('scales unitless ratios and suppresses negative zero', () => {
+    expect(formatRatioAsPercent(dec('-0.0018'), 2)).toBe('\u22120.18%');
+    expect(formatRatioAsPercent(dec('0.584'), 1)).toBe('+58.4%');
+    expect(formatRatioAsPercent(dec('0'), 1)).toBe('0.0%');
   });
 });
 

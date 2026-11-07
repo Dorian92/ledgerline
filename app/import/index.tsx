@@ -7,10 +7,11 @@ import { useRepos } from '@/data/DbProvider';
 import { importAdapters } from '@/domain/import/adapters';
 import { buildImportPlan } from '@/domain/import/plan';
 import { useRealModeOnly } from '@/features/guards';
+import { DemoGuardPanel } from '@/features/settings/DemoGuardPanel';
+import { NavScreen } from '@/ui/NavScreen';
 import { useImportDraft } from '@/state/importDraft';
 import { useSession } from '@/state/session';
 import { ButtonUi } from '@/ui/Button';
-import { ScreenHeader } from '@/ui/primitives';
 import { Text } from '@/ui/Text';
 import { color, radius, space } from '@/ui/tokens';
 
@@ -33,7 +34,10 @@ export default function ImportIndexScreen() {
   const setDraft = useImportDraft((s) => s.setDraft);
 
   const loadText = async (fileName: string, text: string) => {
-    const fps = await repos.imports.existingFingerprints(accountId!);
+    if (!accountId) {
+      return;
+    }
+    const fps = await repos.imports.existingFingerprints(accountId);
     const plan = await buildImportPlan({
       text,
       adapters: importAdapters,
@@ -61,16 +65,28 @@ export default function ImportIndexScreen() {
 
   if (!guard.allowed) {
     return (
-      <View style={styles.container}>
-        <ScreenHeader title="Import trades" />
-        <Text variant="secondary">{guard.reason}</Text>
-      </View>
+      <DemoGuardPanel
+        title="Import trades"
+        body={guard.reason ?? 'Import requires a real journal account.'}
+      />
+    );
+  }
+
+  if (!accountId) {
+    return (
+      <NavScreen title="Import trades">
+        <Text variant="secondary">Create a journal account before importing trades.</Text>
+        <ButtonUi
+          title="Start my journal"
+          onPress={() => router.push('/(onboarding)/create-account')}
+          style={{ marginTop: space.lg }}
+        />
+      </NavScreen>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Import trades" />
+    <NavScreen title="Import trades" scroll contentContainerStyle={styles.container}>
       <Text variant="secondary">
         Exchange adapters for Binance, Bybit and OKX are not verified yet. You can import a test CSV
         format below.
@@ -92,7 +108,7 @@ export default function ImportIndexScreen() {
         variant="secondary"
         onPress={() => loadText('SYNTHETIC_test.csv', SAMPLE)}
       />
-    </View>
+    </NavScreen>
   );
 }
 

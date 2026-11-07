@@ -52,12 +52,24 @@ const styles = StyleSheet.create({
   pillTextActive: { color: color.text, fontWeight: '600' },
 });
 
-export function StatTile({ label, value }: { label: string; value: string }) {
+export function StatTile({
+  label,
+  value,
+  hidden,
+}: {
+  label: string;
+  value: string;
+  hidden?: boolean;
+}) {
+  const display = hidden && !value.startsWith('—') && value !== '••••' ? '••••' : value;
   return (
-    <View style={statStyles.tile}>
+    <View
+      style={statStyles.tile}
+      accessibilityLabel={hidden ? `${label} hidden` : `${label} ${display}`}
+    >
       <Text variant="caption">{label}</Text>
       <Text variant="mono" style={statStyles.value}>
-        {value}
+        {display}
       </Text>
     </View>
   );

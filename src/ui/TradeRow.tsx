@@ -12,6 +12,7 @@ export function TradeRow({
   timeLabel,
   netPnl,
   rMultiple,
+  hidden,
   onPress,
   onLongPress,
 }: {
@@ -20,6 +21,7 @@ export function TradeRow({
   timeLabel: string;
   netPnl: string;
   rMultiple: string | null;
+  hidden?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
 }) {
@@ -36,10 +38,17 @@ export function TradeRow({
         <Text variant="secondary">{timeLabel}</Text>
       </View>
       <View style={styles.right}>
-        <Text variant="mono" style={{ color: net.isPositive() ? color.green : color.red }}>
-          {formatMoney(net, 'USD', { sign: 'always', compact: true })}
+        <Text
+          variant="mono"
+          style={{
+            color: hidden ? color.textMuted : net.isPositive() ? color.green : color.red,
+          }}
+        >
+          {formatMoney(net, 'USD', { sign: 'always', compact: true, hidden })}
         </Text>
-        <Text variant="monoSmall">{rMultiple ? formatR(fromCanonical(rMultiple)) : '—'}</Text>
+        <Text variant="monoSmall">
+          {hidden ? '••••' : rMultiple ? formatR(fromCanonical(rMultiple)) : '—'}
+        </Text>
       </View>
     </View>
   );

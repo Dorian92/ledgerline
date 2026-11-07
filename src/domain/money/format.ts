@@ -75,6 +75,23 @@ export function formatPercent(d: Dec | null, dp: number): string {
   return `${formatGrouped(d, dp)}%`;
 }
 
+/** Formats a unitless ratio (e.g. 0.0182) as a signed percentage (1.82%). */
+export function formatRatioAsPercent(d: Dec | null, dp: number): string {
+  if (d === null) {
+    return '—';
+  }
+  if (d.isZero()) {
+    return `0.${'0'.repeat(dp)}%`;
+  }
+  const pct = d.mul(100);
+  const rounded = pct.toDecimalPlaces(dp, ROUND_HALF_EVEN);
+  let body = formatGrouped(rounded, dp);
+  if (rounded.isPositive() && !body.startsWith('+')) {
+    body = `+${body.replace(MINUS, '')}`;
+  }
+  return `${body}%`;
+}
+
 export function moneyA11yLabel(d: Dec, ccy: QuoteCurrency): string {
   if (isZero(d)) {
     return 'zero';

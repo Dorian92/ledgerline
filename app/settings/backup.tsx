@@ -1,4 +1,4 @@
-import { View, StyleSheet, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
@@ -13,11 +13,11 @@ import {
   snapshotBackup,
 } from '@/data/backup/service';
 import { useRealModeOnly } from '@/features/guards';
+import { DemoGuardPanel } from '@/features/settings/DemoGuardPanel';
 import { refreshTodayWidget } from '@/platform/widget/update';
-import { ScreenHeader, EmptyState } from '@/ui/primitives';
 import { ButtonUi } from '@/ui/Button';
-import { Text } from '@/ui/Text';
-import { color, space } from '@/ui/tokens';
+import { NavScreen } from '@/ui/NavScreen';
+import { EmptyState } from '@/ui/primitives';
 
 export default function BackupScreen() {
   const guard = useRealModeOnly();
@@ -26,10 +26,10 @@ export default function BackupScreen() {
 
   if (!guard.allowed) {
     return (
-      <View style={styles.container}>
-        <ScreenHeader title="Backup" />
-        <Text variant="secondary">{guard.reason}</Text>
-      </View>
+      <DemoGuardPanel
+        title="Backup"
+        body={guard.reason ?? 'Backup is only available for your real journal.'}
+      />
     );
   }
 
@@ -78,10 +78,10 @@ export default function BackupScreen() {
   };
 
   const wipe = async () => {
-    Alert.alert('Delete all data?', 'Type DELETE in the next dialog.', [
+    Alert.alert('Delete all data?', 'This cannot be undone.', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Continue',
+        text: 'Delete',
         style: 'destructive',
         onPress: async () => {
           await deleteAllJournalData(repos);
@@ -93,8 +93,7 @@ export default function BackupScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Backup" />
+    <NavScreen title="Backup" scroll>
       <EmptyState
         title="Your data stays on-device"
         body="Backups are readable JSON. Store them somewhere private."
@@ -103,16 +102,6 @@ export default function BackupScreen() {
       <ButtonUi title="Export trades CSV" variant="secondary" onPress={exportCsv} />
       <ButtonUi title="Restore from backup" variant="secondary" onPress={restore} />
       <ButtonUi title="Delete all data" variant="secondary" onPress={wipe} />
-    </View>
+    </NavScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bg,
-    padding: space.lg,
-    paddingTop: 48,
-    gap: space.md,
-  },
-});

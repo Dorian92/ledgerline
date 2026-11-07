@@ -1,4 +1,3 @@
-import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
@@ -7,9 +6,8 @@ import { useRepos } from '@/data/DbProvider';
 import { TradeForm } from '@/features/trade-form/TradeForm';
 import type { TradeFormValues } from '@/features/trade-form/schema';
 import { useSession } from '@/state/session';
-import { ScreenHeader } from '@/ui/primitives';
+import { NavScreen } from '@/ui/NavScreen';
 import { Text } from '@/ui/Text';
-import { color } from '@/ui/tokens';
 
 export default function EditTradeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,10 +23,9 @@ export default function EditTradeScreen() {
 
   if (isLoading || !input) {
     return (
-      <View style={styles.container}>
-        <ScreenHeader title="Edit trade" />
+      <NavScreen title="Edit trade">
         <Text variant="secondary">Loading…</Text>
-      </View>
+      </NavScreen>
     );
   }
 
@@ -41,13 +38,8 @@ export default function EditTradeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Edit trade" />
-      <TradeForm onSubmit={onSubmit} submitting={update.isPending} />
-    </View>
+    <NavScreen title="Edit trade" scroll>
+      <TradeForm onSubmit={onSubmit} submitting={update.isPending} onCancel={() => router.back()} />
+    </NavScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: color.bg, paddingTop: 48 },
-});

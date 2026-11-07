@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
   Inter_400Regular,
@@ -49,20 +50,22 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <DbProvider>
-          <>
-            <StatusBar style="light" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: '#0B0E14' },
-              }}
-            />
-          </>
-        </DbProvider>
-      </ErrorBoundary>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <ErrorBoundary>
+          <DbProvider>
+            <>
+              <StatusBar style="light" />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: '#0B0E14' },
+                }}
+              />
+            </>
+          </DbProvider>
+        </ErrorBoundary>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

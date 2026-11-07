@@ -1,37 +1,33 @@
-import { View, StyleSheet } from 'react-native';
-
 import { useRepos } from '@/data/DbProvider';
 import { usePro } from '@/state/pro';
-import { ScreenHeader, EmptyState } from '@/ui/primitives';
 import { ButtonUi } from '@/ui/Button';
-import { color, space } from '@/ui/tokens';
+import { NavScreen } from '@/ui/NavScreen';
+import { EmptyState } from '@/ui/primitives';
+import { Text } from '@/ui/Text';
+import { space } from '@/ui/tokens';
 
 export default function ProScreen() {
   const repos = useRepos();
   const entitled = usePro((s) => s.entitled);
   const mockPurchase = usePro((s) => s.mockPurchase);
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Pro" />
+    <NavScreen title="Pro">
       <EmptyState
-        title={entitled ? 'Pro active (mock)' : 'Ledgerline Pro'}
+        title={entitled ? 'Pro active' : 'Ledgerline Pro'}
         body={
           entitled
-            ? 'Insights extras, widget and multi-account are unlocked in this mock build.'
-            : 'Mock billing for development. Play Billing ships in step 27.'
+            ? 'Insights, widget and multiple accounts are unlocked in this development build.'
+            : 'One-time purchase unlocks Insights, the home-screen widget and multiple accounts. Billing ships in a later release.'
         }
       />
-      {!entitled ? <ButtonUi title="Mock purchase" onPress={() => mockPurchase(repos)} /> : null}
-    </View>
+      {__DEV__ && !entitled ? (
+        <ButtonUi title="Unlock Pro (dev mock only)" onPress={() => mockPurchase(repos)} />
+      ) : null}
+      {!__DEV__ ? (
+        <Text variant="secondary" style={{ marginTop: space.md }}>
+          Purchases are not available in this build yet.
+        </Text>
+      ) : null}
+    </NavScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bg,
-    padding: space.lg,
-    paddingTop: 48,
-    gap: space.md,
-  },
-});

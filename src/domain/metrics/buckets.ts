@@ -1,5 +1,5 @@
 import { add, div, ZERO, type Dec } from '@/domain/money/dec';
-import { fromCanonical } from '@/domain/money/canonical';
+import { fromCanonical, toCanonical } from '@/domain/money/canonical';
 import { classifyOutcome } from '@/domain/trade/compute';
 import { localDayKey, localHour, type DayKey } from '@/domain/time/tz';
 
@@ -93,11 +93,25 @@ export function calendarMonth(trades: MetricTrade[], year: number, month: number
     if (net && net.abs().gt(maxAbs)) {
       maxAbs = net.abs();
     }
-    days.push({ dayKey, net, count: row?.count ?? 0, intensity: 0 as 0 | 1 | 2 | 3 | 4 });
+    const sign =
+      net === null
+        ? null
+        : net.isZero()
+          ? ('flat' as const)
+          : net.isPositive()
+            ? ('win' as const)
+            : ('loss' as const);
+    days.push({
+      dayKey,
+      net: net === null ? null : toCanonical(net),
+      count: row?.count ?? 0,
+      intensity: 0 as 0 | 1 | 2 | 3 | 4,
+      sign,
+    });
   }
   for (const cell of days) {
     if (cell.net && !maxAbs.isZero()) {
-      const ratio = cell.net.abs().div(maxAbs).toNumber();
+      const ratio = fromCanonical(cell.net).abs().div(maxAbs).toNumber();
       cell.intensity = (ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1) as
         0 | 1 | 2 | 3 | 4;
     }

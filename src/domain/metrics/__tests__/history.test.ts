@@ -1,3 +1,6 @@
+import { formatMoney } from '@/domain/money/format';
+import { fromCanonical } from '@/domain/money/canonical';
+
 import { buildHistorySections, matchesFilter } from '../history';
 import type { HistoryTradeRow } from '../history';
 
@@ -14,6 +17,22 @@ describe('history', () => {
     notes: '',
     emotion: null,
     source: 'manual',
+  });
+
+  it('stores bounded canonical net on day headers', () => {
+    const sections = buildHistorySections(
+      [
+        row('1', Date.parse('2026-01-02T10:00:00Z'), '5.3850996731752529768'),
+        row('2', Date.parse('2026-01-02T11:00:00Z'), '-1.03979671798669733095'),
+      ],
+      'UTC',
+      Date.parse('2026-01-02T12:00:00Z'),
+    );
+    const header = sections.find((s) => s.kind === 'header' && s.key === '2026-01-02');
+    expect(header?.kind).toBe('header');
+    if (header?.kind === 'header') {
+      expect(formatMoney(fromCanonical(header.net), 'USD', { sign: 'always' })).toBe('+$4.35');
+    }
   });
 
   it('groups by day', () => {
