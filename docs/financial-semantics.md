@@ -163,7 +163,7 @@ For the closed trades `T` in a period, sorted by `(closedAt, id)`:
 - Quantities: as stored, max 8 dp, never rounded to 0. Show "<0.00000001" if needed.
 - R: 2 dp with sign and suffix `R` ("+2.04R").
 - Percent: 1 dp for win rate and DD, 2 dp for return.
-- Hide amounts (privacy): every money value renders as `••••`. R, win rate and percentages stay visible.
+- Hide amounts (privacy): quote-denominated values render as `••••` (PnL, fees, equity, entry/exit/stop prices, size, calendar day $, and matching accessibility labels). Editable forms mask those fields until **Reveal**; save without edits keeps full canonical decimals from the DB. R, win rate and return/max-DD percentages stay visible.
 
 ## 9. Recalculation rules
 

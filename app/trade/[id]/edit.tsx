@@ -3,7 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 
 import { formToInput, useUpdateTrade } from '@/data/queries/useTrades';
 import { useRepos } from '@/data/DbProvider';
-import { mergeFormIntoTradeInput, tradeInputToFormValues } from '@/features/trade-form/map';
+import {
+  mergeFormIntoTradeInput,
+  resolveFormValuesForSave,
+  tradeInputToFormValues,
+} from '@/features/trade-form/map';
+import type { MonetaryFieldKey } from '@/features/privacy/moneyMask';
 import { TradeForm } from '@/features/trade-form/TradeForm';
 import type { TradeFormValues } from '@/features/trade-form/schema';
 import { useSession } from '@/state/session';
@@ -59,11 +64,15 @@ export default function EditTradeScreen() {
 
   const initial = tradeInputToFormValues(input);
 
-  const onSubmit = async (values: TradeFormValues) => {
+  const onSubmit = async (
+    values: TradeFormValues,
+    opts?: { dirtyFields: Partial<Record<MonetaryFieldKey, boolean>> },
+  ) => {
     if (!accountId) return;
-    const mapped = formToInput({ ...values, accountId, quoteAsset: input.quoteAsset });
+    const resolved = resolveFormValuesForSave(input, values, opts?.dirtyFields ?? {});
+    const mapped = formToInput({ ...resolved, accountId, quoteAsset: input.quoteAsset });
     if ('error' in mapped) return;
-    const next = mergeFormIntoTradeInput(input, values, mapped);
+    const next = mergeFormIntoTradeInput(input, resolved, mapped);
     await update.mutateAsync({ id, input: next });
     router.back();
   };

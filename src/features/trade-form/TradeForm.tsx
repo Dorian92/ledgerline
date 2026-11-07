@@ -22,6 +22,9 @@ import { Text } from '@/ui/Text';
 import { Segmented } from '@/ui/primitives';
 import { color, space } from '@/ui/tokens';
 
+import type { MonetaryFieldKey } from '@/features/privacy/moneyMask';
+
+import { MonetaryField } from './MonetaryField';
 import { SetupTagsField } from './SetupTagsField';
 import type { TradeFormValues } from './schema';
 
@@ -45,7 +48,10 @@ export function TradeForm({
   initialValues,
   formKey,
 }: {
-  onSubmit: (values: TradeFormValues) => void;
+  onSubmit: (
+    values: TradeFormValues,
+    opts?: { dirtyFields: Partial<Record<MonetaryFieldKey, boolean>> },
+  ) => void;
   submitting?: boolean;
   onCancel?: () => void;
   /** When set, form must not show quick-add defaults (edit mode). */
@@ -67,6 +73,11 @@ export function TradeForm({
   );
   const [tagIds, setTagIds] = useState<string[]>(seed.tagIds ?? []);
   const [notes, setNotes] = useState(seed.notes ?? '');
+  const [dirtyFields, setDirtyFields] = useState<Partial<Record<MonetaryFieldKey, boolean>>>({});
+
+  const markDirty = (field: MonetaryFieldKey) => {
+    setDirtyFields((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
+  };
 
   const emotions: { id: typeof emotion; label: string }[] = [
     { id: 'calm', label: 'Calm' },
@@ -95,7 +106,10 @@ export function TradeForm({
   }, [accountId, symbol, direction, entry, exit, quantity, stop, fees, emotion, tagIds]);
 
   const save = () => {
-    onSubmit({ symbol, direction, entry, exit, quantity, stop, fees, notes, emotion, tagIds });
+    onSubmit(
+      { symbol, direction, entry, exit, quantity, stop, fees, notes, emotion, tagIds },
+      { dirtyFields },
+    );
   };
 
   return (
@@ -115,15 +129,50 @@ export function TradeForm({
           value={direction}
           onChange={setDirection}
         />
+        {hideAmounts ? (
+          <Text variant="caption" style={{ textTransform: 'none' }}>
+            Price, size, and fee fields are hidden until you tap Reveal on each one.
+          </Text>
+        ) : null}
         <View style={styles.twoCol}>
-          <Field label="ENTRY" value={entry} onChange={setEntry} />
-          <Field label="EXIT" value={exit} onChange={setExit} />
+          <MonetaryField
+            label="ENTRY"
+            value={entry}
+            onChange={setEntry}
+            hideAmounts={hideAmounts}
+            onDirty={() => markDirty('entry')}
+          />
+          <MonetaryField
+            label="EXIT"
+            value={exit}
+            onChange={setExit}
+            hideAmounts={hideAmounts}
+            onDirty={() => markDirty('exit')}
+          />
         </View>
         <View style={styles.twoCol}>
-          <Field label="SIZE" value={quantity} onChange={setQuantity} />
-          <Field label="STOP" value={stop} onChange={setStop} />
+          <MonetaryField
+            label="SIZE"
+            value={quantity}
+            onChange={setQuantity}
+            hideAmounts={hideAmounts}
+            onDirty={() => markDirty('quantity')}
+          />
+          <MonetaryField
+            label="STOP"
+            value={stop}
+            onChange={setStop}
+            hideAmounts={hideAmounts}
+            onDirty={() => markDirty('stop')}
+          />
         </View>
-        <Field label="FEES" value={fees} onChange={setFees} />
+        <MonetaryField
+          label="FEES"
+          value={fees}
+          onChange={setFees}
+          hideAmounts={hideAmounts}
+          onDirty={() => markDirty('fees')}
+        />
         <Text variant="caption">EMOTION</Text>
         <View style={styles.emotions}>
           {emotions.map((e) => (
@@ -165,28 +214,6 @@ export function TradeForm({
         ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <View style={styles.field}>
-      <Text variant="caption">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        keyboardType="decimal-pad"
-        style={styles.input}
-      />
-    </View>
   );
 }
 

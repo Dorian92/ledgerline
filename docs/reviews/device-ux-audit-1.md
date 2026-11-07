@@ -16,7 +16,7 @@ Evidence PNGs (audit): `ledgerline-ux-audit/` in repo attachments. Approved refe
 | ID    | Severity | Summary                                           | Status                   | Verification                                                                                                 |
 | ----- | -------- | ------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | UX-01 | High     | Back/Close on nested routes; modal close          | **Fixed** (code)         | Retest: trade detail/edit/new, Settings sub-screens, Import/Backup/Pro/Reminders/Accounts, onboarding create |
-| UX-02 | High     | Hide amounts across UI + a11y/charts              | **Fixed** (code)         | Retest: toggle Privacy → Home/Trades/Insights; TalkBack labels on equity/calendar                            |
+| UX-02 | High     | Hide amounts across UI + a11y/charts              | **Fixed** (pass 3)       | Retest: detail + edit masked; Reveal; unchanged-save round-trip                                              |
 | UX-03 | High     | Cancel onboarding must not strand unset real mode | **Fixed** (code)         | Retest: Demo → Start journal → Back without create; expect demo dashboard                                    |
 | UX-04 | High     | Trades day totals format + loss color             | **Fixed** (code)         | Retest: Trades history headers (bounded currency, red negatives)                                             |
 | UX-05 | High     | Insights histogram/calendar bounds + loss color   | **Fixed** (code)         | Retest: R distribution width; 7-column calendar; drawdown label units                                        |
@@ -49,22 +49,25 @@ Evidence PNGs (audit): `ledgerline-ux-audit/` in repo attachments. Approved refe
 
 ### Privacy policy (Hide amounts)
 
-| Kind                   | Examples                                                            | When hidden                              |
-| ---------------------- | ------------------------------------------------------------------- | ---------------------------------------- |
-| **Currency**           | Net PnL, fees, equity endpoints, calendar day $, trade row $        | Masked (`••••`) in UI + a11y where wired |
-| **Performance ratios** | Win rate %, return %, max DD %, per-trade **R**, R histogram counts | **Remain visible** (not balances)        |
+| Kind                         | Examples                                                                                              | When hidden                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Currency / quote numbers** | Net PnL, fees, equity, calendar $, trade row $, detail entry/exit/stop/size, form fields until Reveal | Masked (`••••`) in UI + a11y |
+| **Performance ratios**       | Win rate %, return %, max DD %, per-trade **R**, histogram counts                                     | **Remain visible**           |
 
-**Device checklist (hidden mode):** Home headline/equity/recent $ masked; AVG R / return % / win rate visible; Trades row $ masked, **R visible**; Insights drawdown $ labels masked, R distribution counts visible; TalkBack on calendar days does not speak dollar PnL when hidden.
+**Pass 3:** After `a6af041` retest, detail/edit prices were still visible — fixed via `MonetaryField` + canonical save (`resolveFormValuesForSave`).
+
+**Device checklist (hidden mode):** Home/Trades $ masked, R visible; **detail** prices/size/fees masked; **edit** `••••` + per-field Reveal; save without edits keeps exact DB decimals; calendar/detail a11y says “hidden”.
 
 ---
 
 ## Regression findings (pass 2)
 
-| #    | Issue                         | Root cause (code)                                                           | Fix                                                |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------- |
-| R-01 | Edit ≠ detail trade           | `TradeForm` hardcoded quick-add defaults; edit never passed `initialValues` | Hydrate from `getInput`; block save when not found |
-| R-02 | Calendar 8-wide rows + LogBox | `maxWidth: 44` on 14% cells fit 8 per row; duplicate `key={w}` for Tue/Thu  | `flexBasis` 1/7 width; `WEEKDAY_LABELS[].key`      |
-| R-03 | Inconsistent hide             | `StatTile hidden` on win rate %; R hidden on rows                           | Money-only policy                                  |
+| #    | Issue                          | Root cause (code)                                                           | Fix                                                |
+| ---- | ------------------------------ | --------------------------------------------------------------------------- | -------------------------------------------------- |
+| R-01 | Edit ≠ detail trade            | `TradeForm` hardcoded quick-add defaults; edit never passed `initialValues` | Hydrate from `getInput`; block save when not found |
+| R-02 | Calendar 8-wide rows + LogBox  | `maxWidth: 44` on 14% cells fit 8 per row; duplicate `key={w}` for Tue/Thu  | `flexBasis` 1/7 width; `WEEKDAY_LABELS[].key`      |
+| R-03 | Inconsistent hide              | `StatTile hidden` on win rate %; R hidden on rows                           | Money-only policy                                  |
+| R-04 | Detail/form prices when hidden | Entry/exit shown; form inputs exposed raw values                            | `moneyMask` + `MonetaryField`; canonical on save   |
 
 ---
 

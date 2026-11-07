@@ -7,6 +7,7 @@ import { useRepos } from '@/data/DbProvider';
 import { useDeleteTrade } from '@/data/queries/useTrades';
 import { fromCanonical } from '@/domain/money/canonical';
 import { formatMoney, formatPriceForDisplay, formatR } from '@/domain/money/format';
+import { maskMonetaryDisplay, monetaryAccessibilityLabel } from '@/features/privacy/moneyMask';
 import { usePrivacy } from '@/state/privacy';
 import { Money } from '@/ui/Money';
 import { ButtonUi } from '@/ui/Button';
@@ -52,10 +53,27 @@ export default function TradeDetailScreen() {
     ]);
   };
 
-  const Row = ({ label, value }: { label: string; value: string }) => (
+  const Row = ({
+    label,
+    value,
+    monetary = false,
+  }: {
+    label: string;
+    value: string;
+    monetary?: boolean;
+  }) => (
     <View style={styles.row}>
       <Text variant="caption">{label}</Text>
-      <Text variant="mono">{hideAmounts && value.includes('$') ? '••••' : value}</Text>
+      <Text
+        variant="mono"
+        accessibilityLabel={monetaryAccessibilityLabel(
+          hideAmounts && monetary,
+          label,
+          value.includes('$') ? 'amount' : value,
+        )}
+      >
+        {monetary ? maskMonetaryDisplay(hideAmounts, value) : value}
+      </Text>
     </View>
   );
 
@@ -79,19 +97,33 @@ export default function TradeDetailScreen() {
       <Card style={{ marginTop: space.lg, gap: space.sm }}>
         <Row
           label="ENTRY"
+          monetary
           value={formatPriceForDisplay(fromCanonical(row.entry_price as string))}
         />
         <Row
           label="EXIT"
+          monetary
           value={
             row.exit_price ? formatPriceForDisplay(fromCanonical(row.exit_price as string)) : '—'
           }
         />
-        <Row label="SIZE" value={formatPriceForDisplay(fromCanonical(row.quantity as string))} />
+        <Row
+          label="SIZE"
+          monetary
+          value={formatPriceForDisplay(fromCanonical(row.quantity as string))}
+        />
         <Row
           label="FEES"
-          value={formatMoney(fromCanonical(row.fees as string), 'USD', { hidden: hideAmounts })}
+          monetary
+          value={formatMoney(fromCanonical(row.fees as string), 'USD', { sign: 'always' })}
         />
+        {row.stop_price ? (
+          <Row
+            label="STOP"
+            monetary
+            value={formatPriceForDisplay(fromCanonical(row.stop_price as string))}
+          />
+        ) : null}
         <Row
           label="OPENED"
           value={format(new Date(row.opened_at as number), 'MMM d, yyyy HH:mm')}

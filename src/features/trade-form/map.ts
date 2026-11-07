@@ -1,17 +1,19 @@
+import { toCanonical } from '@/domain/money/canonical';
 import type { TradeInput } from '@/domain/trade/types';
-import { formatPriceForDisplay } from '@/domain/money/format';
+import type { MonetaryFieldKey } from '@/features/privacy/moneyMask';
 
 import type { TradeFormValues } from './schema';
 
+/** Full-precision strings for form state (no display rounding). */
 export function tradeInputToFormValues(input: TradeInput): TradeFormValues {
   return {
     symbol: input.symbol,
     direction: input.direction,
-    entry: formatPriceForDisplay(input.entryPrice),
-    exit: input.exitPrice ? formatPriceForDisplay(input.exitPrice) : '',
-    quantity: formatPriceForDisplay(input.quantity),
-    stop: input.stopPrice ? formatPriceForDisplay(input.stopPrice) : '',
-    fees: formatPriceForDisplay(input.fees),
+    entry: toCanonical(input.entryPrice),
+    exit: input.exitPrice ? toCanonical(input.exitPrice) : '',
+    quantity: toCanonical(input.quantity),
+    stop: input.stopPrice ? toCanonical(input.stopPrice) : '',
+    fees: toCanonical(input.fees),
     emotion: input.emotion ?? 'calm',
     tagIds: input.tagIds ?? [],
     notes: input.notes ?? '',
@@ -37,5 +39,22 @@ export function mergeFormIntoTradeInput(
     tagIds: values.tagIds ?? [],
     notes: values.notes?.trim() ?? '',
     emotion: values.emotion ?? base.emotion,
+  };
+}
+
+/** When a monetary field was not edited, keep persisted canonical string (avoids display rounding). */
+export function resolveFormValuesForSave(
+  base: TradeInput,
+  values: TradeFormValues,
+  dirty: Partial<Record<MonetaryFieldKey, boolean>>,
+): TradeFormValues {
+  const canonical = tradeInputToFormValues(base);
+  return {
+    ...values,
+    entry: dirty.entry ? values.entry : canonical.entry,
+    exit: dirty.exit ? values.exit : canonical.exit,
+    quantity: dirty.quantity ? values.quantity : canonical.quantity,
+    stop: dirty.stop ? values.stop : canonical.stop,
+    fees: dirty.fees ? values.fees : canonical.fees,
   };
 }
