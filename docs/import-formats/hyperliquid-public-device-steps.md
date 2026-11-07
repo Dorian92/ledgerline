@@ -6,9 +6,10 @@
 ## Before import
 
 1. Switch to **real mode** (not demo). Demo blocks import.
-2. **Settings → Manage accounts → Create account**
-   - Name e.g. `Public HL · stuxfred`
-   - Quote currency **USDC** (fees in file are USDC; app does not convert USDC↔USD).
+2. Create a **USDC** account (quote picker on both flows):
+   - **Start my journal** (first account): name e.g. `Public HL · stuxfred`, tap **USDC** under **Quote currency**, then **Create account**.
+   - Or **Settings → Manage accounts**: same name, select **USDC**, **Create account**.
+   - Fees in the CSV are USDC; the app does not convert USDC↔USD.
 3. Copy the CSV to the phone/emulator (USB, cloud drive, or email attachment).
 
 ## File picker steps (Android)

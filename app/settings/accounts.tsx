@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
 import { useRepos } from '@/data/DbProvider';
+import type { QuoteCurrency } from '@/domain/money/types';
+import { QuoteCurrencyField } from '@/features/accounts/QuoteCurrencyField';
 import { ProGate, useHasPro, usePro } from '@/state/pro';
 import { useSession } from '@/state/session';
 import { ButtonUi } from '@/ui/Button';
@@ -91,6 +93,7 @@ export default function AccountsSettingsScreen() {
   const hasPro = useHasPro();
   const mockPurchase = usePro((s) => s.mockPurchase);
   const [name, setName] = useState('Journal 2');
+  const [quoteCurrency, setQuoteCurrency] = useState<QuoteCurrency>('USD');
   const { data, refetch } = useQuery({
     queryKey: ['accounts'],
     queryFn: () => repos.accounts.list(),
@@ -104,7 +107,7 @@ export default function AccountsSettingsScreen() {
     }
     const id = await repos.accounts.create({
       name: name.trim() || 'Account',
-      quoteCurrency: 'USD',
+      quoteCurrency,
     });
     setActive(id);
     await refetch();
@@ -143,6 +146,7 @@ export default function AccountsSettingsScreen() {
         style={styles.input}
         accessibilityLabel="New account name"
       />
+      <QuoteCurrencyField value={quoteCurrency} onChange={setQuoteCurrency} />
       <ButtonUi title="Create account" onPress={createSecond} />
       {__DEV__ && !hasPro ? (
         <ButtonUi
