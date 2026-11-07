@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "check": "npm run typecheck && npm run lint && npm run test -- --ci",
+    "verify:assets": "node scripts/verify-build-assets.mjs",
+    "check": "npm run typecheck && npm run lint && npm run verify:assets && npm run test -- --ci",
     "check:release": "node scripts/check-release-config.mjs",
     "prebuild": "expo prebuild --platform android --clean"
   },
